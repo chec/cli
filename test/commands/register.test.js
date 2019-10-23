@@ -68,7 +68,7 @@ describe('register', () => {
   }))
   .stdout()
   .command(['register', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .it('gracefully handles non 2xx and 422 responses', ctx => {
+  .it('gracefully handles 422 responses and continues to prompt user', ctx => {
     expect(inquirer.prompt.calledOnce).to.equal(true)
     expect(inquirer.prompt.lastArg).to.have.length(1)
     expect(inquirer.prompt.lastArg[0]).to.include({name: 'email', message: 'Please enter your email address'})

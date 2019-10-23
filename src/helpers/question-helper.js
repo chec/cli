@@ -1,3 +1,5 @@
+const inquirer = require('inquirer')
+
 module.exports = {
   /**
    * @param {array} questions The question definitions as documented by inquirer
@@ -33,5 +35,18 @@ module.exports = {
         message: `${validationResponse}. ${question.message}`,
       }
     }).filter(question => Boolean(question))
+  },
+
+  async ask(questions, existingValidAnswers) {
+    const newQuestions = this.buildQuestions(questions, existingValidAnswers)
+
+    if (newQuestions.length === 0) {
+      return existingValidAnswers
+    }
+
+    return {
+      ...existingValidAnswers,
+      ...await inquirer.prompt(newQuestions),
+    }
   },
 }
