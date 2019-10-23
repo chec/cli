@@ -1,40 +1,22 @@
-const {Command, flags} = require('@oclif/command')
-const inquirer = require('inquirer')
-const questionHelper = require('../helpers/question-helper')
+const {Command} = require('@oclif/command')
 const got = require('got')
 const ora = require('ora')
 const chalk = require('chalk')
 const {cli} = require('cli-ux')
 const process = require('process')
+const loginHelper = require('../helpers/login-helper')
+const globalFlags = require('../helpers/global-flags')
+const questionHelper = require('../helpers/question-helper')
+const emailArg = require('../arguments/email')
+const passwordArg = require('../arguments/password')
 
 class RegisterCommand extends Command {
   async run() {
     const {flags} = this.parse(RegisterCommand)
 
-    const answers = await this.getParameters(flags)
+    const answers = await questionHelper.ask([emailArg, passwordArg], flags)
 
     await this.createMerchant(answers)
-  }
-
-  async getParameters(existingParameters) {
-    const questions = questionHelper.buildQuestions([
-      {
-        name: 'email',
-        validate: this.validateEmail,
-        message: 'Please enter your email address',
-      }, {
-        name: 'password',
-        type: 'password',
-        validate: this.validatePassword,
-        mask: '*',
-        message: 'Enter a password',
-      },
-    ], existingParameters)
-
-    return {
-      ...existingParameters,
-      ...(questions.length > 0 ? await inquirer.prompt(questions) : {}),
-    }
   }
 
   async createMerchant(inputAttributes) {
@@ -43,9 +25,11 @@ class RegisterCommand extends Command {
       text: 'Creating Chec.io account...',
       stream: process.stdout,
     }).start()
-    const {flags: {domain}} = this.parse()
+    const {flags: {domain}} = this.parse(RegisterCommand)
 
     let response
+    const {email, password} = inputAttributes
+
     try {
       response = await got(`http://api.${domain}/v1/merchants`, {
         method: 'PUT',
@@ -92,39 +76,26 @@ class RegisterCommand extends Command {
       }, {})
 
       // Recursively call this method after asking the user for new parameters
-      return this.createMerchant(await this.getParameters(stillValidParameters))
+      const answers = await questionHelper.ask([emailArg, passwordArg], stillValidParameters)
+      return this.createMerchant(answers)
     }
 
-    spinner.succeed('Account created successfully!')
+    let additionalMessage
 
-    this.log('Login to your account at:')
-    cli.url(`dashboard.${domain}/login`, 'http://dashboard.chec.local/login')
+    try {
+      await loginHelper.login(email, password, domain)
+    } catch (error) {
+      additionalMessage = 'Could not log in with the CLI. Please try manually by running "chec login"'
+    }
+    spinner.succeed('Account created successfully!')
+    if (additionalMessage) {
+      this.log(additionalMessage)
+    }
+
+    this.log('You may now run commands on the CLI. Log in to the Chec.io dashboard at:')
+    cli.url(`dashboard.${domain}/login`, `https://dashboard.${domain}/login`)
 
     return response
-  }
-
-  /**
-   * @param {string} email The user provided email address
-   * @returns {boolean} If the email address given is valid
-   */
-  validateEmail(email) {
-    if (email.match(/[^@]+@[^@]+/)) {
-      return true
-    }
-
-    return 'The provided email was invalid'
-  }
-
-  /**
-   * @param {string} password The user provided password
-   * @returns {boolean} If the password is valid
-   */
-  validatePassword(password) {
-    if (password.length >= 8) {
-      return true
-    }
-
-    return 'Your password must be at least 8 characters'
   }
 }
 
@@ -133,13 +104,9 @@ Create an account with Chec.io where you can manage products and pricing that is
 `
 
 RegisterCommand.flags = {
-  email: flags.string({char: 'e', description: 'Email address to register with'}),
-  password: flags.string({char: 'p', description: 'Set the password to use when logging in'}),
-  domain: flags.string({
-    hidden: true,
-    description: 'The base URL for the Chec API',
-    default: 'chec.io',
-  }),
+  email: emailArg.flag,
+  password: passwordArg.flag,
+  ...globalFlags,
 }
 
 module.exports = RegisterCommand
