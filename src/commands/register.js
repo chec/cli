@@ -4,6 +4,7 @@ const ora = require('ora')
 const chalk = require('chalk')
 const {cli} = require('cli-ux')
 const process = require('process')
+const loginHelper = require('../helpers/login-helper')
 const globalFlags = require('../helpers/global-flags')
 const questionHelper = require('../helpers/question-helper')
 const emailArg = require('../arguments/email')
@@ -27,6 +28,8 @@ class RegisterCommand extends Command {
     const {flags: {domain}} = this.parse(RegisterCommand)
 
     let response
+    const {email, password} = inputAttributes
+
     try {
       response = await got(`http://api.${domain}/v1/merchants`, {
         method: 'PUT',
@@ -73,12 +76,23 @@ class RegisterCommand extends Command {
       }, {})
 
       // Recursively call this method after asking the user for new parameters
-      return this.createMerchant(await questionHelper.ask([emailArg, passwordArg], stillValidParameters))
+      const answers = await questionHelper.ask([emailArg, passwordArg], stillValidParameters)
+      return this.createMerchant(answers)
     }
 
-    spinner.succeed('Account created successfully!')
+    let additionalMessage
 
-    this.log('Login to your account at:')
+    try {
+      await loginHelper.login(email, password, domain)
+    } catch (error) {
+      additionalMessage = 'Could not log in with the CLI. Please try manually by running "chec login"'
+    }
+    spinner.succeed('Account created successfully!')
+    if (additionalMessage) {
+      this.log(additionalMessage)
+    }
+
+    this.log('You may now run commands on the CLI. Log in to the Chec.io dashboard at:')
     cli.url(`dashboard.${domain}/login`, `https://dashboard.${domain}/login`)
 
     return response

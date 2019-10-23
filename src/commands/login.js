@@ -1,8 +1,7 @@
-const fs = require('fs')
-const homedir = require('os').homedir()
-const {Command} = require('@oclif/command')
-const got = require('got')
+const {Command, flags} = require('@oclif/command')
 const ora = require('ora')
+const inquirer = require('inquirer')
+const loginHelper = require('../helpers/login-helper')
 const questionHelper = require('../helpers/question-helper')
 const globalFlags = require('../helpers/global-flags')
 const emailArg = require('../arguments/email')
@@ -10,59 +9,58 @@ const passwordArg = require('../arguments/password')
 
 class LoginCommand extends Command {
   async run() {
-    const filename = `${homedir}${require('path').sep}.checrc`
-    try {
-      fs.accessSync(homedir)
-      fs.closeSync(fs.openSync(filename, 'a'))
-    } catch (error) {
-      return this.error(`The login command requires a writable home directory (using "${homedir}")`)
+    // Parse "skipCheck", "email" and "password" from command arguments
+    const {flags: {'skip-check': skipCheck, ...flags}} = this.parse(LoginCommand)
+
+    // Assert that logging in is supported
+    if (!loginHelper.loginSupported()) {
+      return this.error(`The login command requires a writable home directory (using "${require('os').homedir()}")`)
     }
 
-    const {flags} = this.parse(LoginCommand)
+    // Check if the user is already logged in
+    if (!skipCheck && loginHelper.isLoggedIn()) {
+      const {confirm} = await inquirer.prompt([{
+        name: 'confirm',
+        type: 'confirm',
+        message: 'A user is currently logged in, do you want to continue?',
+        default: true,
+      }])
 
-    const response = await this.login(flags)
-    const key = JSON.parse(response.body).find(candidate => candidate.type === 'secret' && !candidate.is_sandbox)
-
-    if (!key) {
-      return this.error('An unexpected error occured (MISSING_KEY)')
+      if (!confirm) {
+        return
+      }
     }
 
-    fs.writeFileSync(filename, key.key)
+    // Do the actual login
+    await this.login(flags)
   }
 
   async login(input = {}) {
+    // API domain is provided from arguments
     const {flags: {domain}} = this.parse(LoginCommand)
-    let {email, password} = await questionHelper.ask([emailArg, passwordArg], input)
+    // Fill in any blanks from the input
+    const {email, password} = await questionHelper.ask([emailArg, passwordArg], input)
 
     const spinner = ora({
       text: 'Logging into Chec.io...',
       stream: process.stdout,
     }).start()
 
-    const urlParams = `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
-
     try {
-      const response = await got(`http://api.${domain}/v1/developer/login/issue-keys?${urlParams}`)
-      spinner.succeed('Login successful!')
-      return response
+      // Use the email
+      await loginHelper.login(email, password, domain)
     } catch (error) {
-      if (!error.response) {
+      if (!error.invalid) {
         spinner.fail('Login failed!')
-        return this.error(`An unexpected error occured (${error.code || error.name})`)
+        return this.error(error.message)
       }
 
-      const {statusCode} = error.response
-
-      // 404 is no user was found matchiing th credentials
-      if (statusCode !== 404) {
-        spinner.fail('Login failed!')
-        return this.error(`An unexpected error occured (${statusCode})`)
-      }
+      // Just stop the spinner with no feedback while we ask for new input
+      spinner.fail('No user was found matching the given credentials')
+      return this.login()
     }
 
-    spinner.fail('No user could be found matching the given credentials')
-
-    return this.login()
+    spinner.succeed('Login successful!')
   }
 }
 
@@ -73,6 +71,10 @@ Log into your Chec.io account to enable commands that require API access.
 LoginCommand.flags = {
   email: emailArg.flag,
   password: passwordArg.flag,
+  'skip-check': flags.boolean({
+    description: 'Indicate that this command should skip checking if a user is already logged in',
+    default: false,
+  }),
   ...globalFlags,
 }
 
