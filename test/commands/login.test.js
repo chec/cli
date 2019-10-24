@@ -45,7 +45,7 @@ describe('login', () => {
 
   const base = test
   .nock('http://api.chec.io', api => api
-  .get('/v1/developer/login/issue-keys?email=test@example.com&password=abcd1234')
+  .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(200, fakeSuccessfulResponse)
   )
   .stdout()
@@ -95,21 +95,21 @@ describe('login', () => {
 
   test
   .nock('http://api.chec.io', api => api
-  .get('/v1/developer/login/issue-keys?email=test@example.com&password=abcd1234')
+  .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(500, JSON.stringify({}))
   )
   .stdout()
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .catch(error => expect(error.message).to.contain('An unexpected error occured (RequestError)'))
+  .catch(error => expect(error.message).to.contain('An unexpected error occurred (RequestError)'))
   .it('gracefully handles non 2xx and 404 responses', ctx => {
     expect(ctx.stdout).to.not.contain('Login successful!')
   })
 
   test
   .nock('http://api.chec.io', api => api
-  .get('/v1/developer/login/issue-keys?email=test@example.com&password=abcd1234')
+  .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(404, JSON.stringify({}))
-  .get('/v1/developer/login/issue-keys?email=bob@example.com&password=qw3rty12')
+  .get('/v1/developer/login/issue-keys?email=bob%40example.com&password=qw3rty12')
   .reply(200, fakeSuccessfulResponse)
   )
   .stub(inquirer, 'prompt', sinon.fake.returns({
@@ -138,7 +138,7 @@ describe('login', () => {
 
   test
   .nock('http://api.chec.io', api => api
-  .get('/v1/developer/login/issue-keys?email=bob%2Bplus@example.com&password=qw3r%2By12')
+  .get('/v1/developer/login/issue-keys?email=bob%2Bplus%40example.com&password=qw3r%2By12')
   .reply(200, fakeSuccessfulResponse)
   )
   .stdout()
@@ -149,13 +149,13 @@ describe('login', () => {
 
   test
   .nock('http://api.chec.io', api => api
-  .get('/v1/developer/login/issue-keys?email=test@example.com&password=abcd1234')
+  .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(200, JSON.stringify([]))
   )
   .stdout()
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .catch(error => {
-    expect(error.message).to.contain('An unexpected error occured (MISSING_KEYS)')
+    expect(error.message).to.contain('An unexpected error occurred (MISSING_KEYS)')
   })
   .it('advises when a valid key was not returned from the API', () => {})
 })

@@ -9,6 +9,6 @@ describe('logout', () => {
   .command(['logout'])
   .it('blanks out the key and displays a message', ctx => {
     expect(loginHelper.logout.calledOnce).to.equal(true)
-    expect(ctx.stdout).to.contain('Successfully logged out from Chec.io')
+    expect(ctx.stdout).to.contain('Logged out')
   })
 })

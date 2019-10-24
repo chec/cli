@@ -1,12 +1,12 @@
 const {Command} = require('@oclif/command')
-const got = require('got')
 const ora = require('ora')
 const chalk = require('chalk')
 const {cli} = require('cli-ux')
 const process = require('process')
-const loginHelper = require('../helpers/auth')
+const loginHelper = require('../helpers/login')
 const globalFlags = require('../helpers/global-flags')
 const questionHelper = require('../helpers/question-helper')
+const requestHelper = require('../helpers/request')
 const emailArg = require('../arguments/email')
 const passwordArg = require('../arguments/password')
 
@@ -31,29 +31,25 @@ class RegisterCommand extends Command {
     const {email, password} = inputAttributes
 
     try {
-      response = await got(`http://api.${domain}/v1/merchants`, {
-        method: 'PUT',
-        body: JSON.stringify(inputAttributes),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      response = await requestHelper.request('PUT', '/v1/merchants', {email, password}, {
+        domain,
       })
     } catch (error) {
       spinner.fail('Account creation failed!')
 
       if (!error.response) {
-        return this.error(`An unexpected error occured (${error.code || error.name})`)
+        return this.error(`An unexpected error occurred (${error.code || error.name})`)
       }
 
-      const {body, statusCode} = error.response
+      const {statusCode} = error.response
 
       // Check for 422 (unprocessable entity) which implies the input was not accepted
       if (statusCode !== 422) {
-        return this.error(`An unexpected error occured (${statusCode})`)
+        return this.error(`An unexpected error occurred (${statusCode})`)
       }
 
       // Discover the invalid attributes
-      const {errors} = JSON.parse(body).error
+      const {errors} = JSON.parse(error.body).error
 
       // Go through the input attributes and prune out those that are invalid
       const stillValidParameters = Object.keys(inputAttributes).reduce((acc, field) => {
