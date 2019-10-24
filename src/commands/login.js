@@ -1,7 +1,7 @@
 const {Command, flags} = require('@oclif/command')
 const ora = require('ora')
 const inquirer = require('inquirer')
-const loginHelper = require('../helpers/login-helper')
+const loginHelper = require('../helpers/auth')
 const questionHelper = require('../helpers/question-helper')
 const globalFlags = require('../helpers/global-flags')
 const emailArg = require('../arguments/email')
