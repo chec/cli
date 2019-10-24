@@ -9,7 +9,7 @@ class LogoutCommand extends Command {
   }
 }
 
-LogoutCommand.description = `Log into your Chec.io account
-Log into your Chec.io account to enable commands that require API access.
+LogoutCommand.description = `Log out of your account
+Log out of your account and remove the local copy of your API keys.
 `
 module.exports = LogoutCommand
