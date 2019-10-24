@@ -3,22 +3,10 @@
 const {expect, test} = require('@oclif/test')
 const inquirer = require('inquirer')
 const sinon = require('sinon')
-const fs = require('fs')
-const {configFilename} = require('../../src/helpers/login-helper')
+const config = require('../../src/helpers/config')
+const auth = require('../../src/helpers/auth')
 
 describe('login', () => {
-  let writeFileStub
-  let readFileStub
-  beforeEach(() => {
-    writeFileStub = sinon.stub(fs, 'writeFileSync')
-    readFileStub = sinon.stub(fs, 'readFileSync')
-    readFileStub.callThrough().withArgs(configFilename).returns('')
-  })
-  afterEach(() => {
-    writeFileStub.restore()
-    readFileStub.restore()
-  })
-
   const fakeSuccessfulResponse = JSON.stringify([
     {key: 'pk_test_123', type: 'public', is_sandbox: true}, // eslint-disable-line camelcase
     {key: 'pk_123', type: 'public', is_sandbox: false}, // eslint-disable-line camelcase
@@ -26,14 +14,27 @@ describe('login', () => {
     {key: 'sk_123', type: 'secret', is_sandbox: false}, // eslint-disable-line camelcase
   ])
 
+  let configSupportedStub
+  let configGetStub
+  beforeEach(() => {
+    configSupportedStub = sinon.stub(config, 'supported')
+    configSupportedStub.returns(true)
+    configGetStub = sinon.stub(config, 'get')
+    configGetStub.returns([])
+  })
+  afterEach(() => {
+    configSupportedStub.restore()
+    configGetStub.restore()
+    auth.keys = null
+  })
+
   test
   .stub(inquirer, 'prompt', sinon.fake.returns({
     confirm: false,
   }))
   .do(() => {
-    readFileStub.withArgs(configFilename).returns('something')
+    configGetStub.returns(['key'])
   })
-  .stdout()
   .command('login')
   .it('Will prompt for confirmation if a user is already logged in and exit when told "no"', () => {
     expect(inquirer.prompt.lastArg[0]).to.include({
@@ -54,7 +55,7 @@ describe('login', () => {
     confirm: true,
   }))
   .do(() => {
-    readFileStub.withArgs(configFilename).returns('something')
+    configGetStub.returns(['key'])
   })
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .it('Will prompt for confirmation if a user is already logged in and continue when told "yes"', ctx => {
@@ -126,8 +127,8 @@ describe('login', () => {
   })
 
   test
-  .stub(fs, 'accessSync', () => {
-    throw new Error('fail')
+  .do(() => {
+    configSupportedStub.returns(false)
   })
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .catch(error => {
@@ -154,7 +155,7 @@ describe('login', () => {
   .stdout()
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .catch(error => {
-    expect(error.message).to.contain('An unexpected error occured (MISSING_KEY)')
+    expect(error.message).to.contain('An unexpected error occured (MISSING_KEYS)')
   })
   .it('advises when a valid key was not returned from the API', () => {})
 })

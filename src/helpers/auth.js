@@ -1,7 +1,5 @@
-const fs = require('fs')
 const got = require('got')
-const homedir = require('os').homedir()
-const configFilename = `${homedir}${require('path').sep}.checrc`
+const config = require('./config')
 
 class LoginError extends Error {
   constructor(message, invalid = false) {
@@ -12,23 +10,19 @@ class LoginError extends Error {
   }
 }
 
-module.exports = {
+class Auth {
+  constructor() {
+    this.config = config
+  }
+
   /**
    * Indicates logging in is supported by checking that a dotfile is writable
    *
    * @return {boolean} Whether logging in is supported
    */
   loginSupported() {
-    try {
-      // Check access
-      fs.accessSync(homedir)
-      // "Touch" the file
-      fs.closeSync(fs.openSync(configFilename, 'a'))
-      return true
-    } catch (error) {
-      return false
-    }
-  },
+    return this.config.supported()
+  }
 
   /**
    * Login the user by calling an endpoint and persisting an API key
@@ -58,24 +52,34 @@ module.exports = {
       throw new LoginError('User not found', true)
     }
 
-    const key = JSON.parse(response.body).find(candidate => candidate.type === 'secret' && !candidate.is_sandbox)
+    const keys = JSON.parse(response.body)
 
-    if (!key) {
-      throw new LoginError('An unexpected error occured (MISSING_KEY)')
+    if (!Array.isArray(keys) || keys.length === 0) {
+      throw new LoginError('An unexpected error occured (MISSING_KEYS)')
     }
 
     // Write the key
-    this.setLoggedInKey(key.key)
-  },
+    this.config.save({keys})
+  }
+
+  getApiKeys() {
+    if (!Array.isArray(this.keys)) {
+      this.keys = this.config.get('keys') || []
+    }
+
+    return this.keys
+  }
 
   /**
-   * Set the API key that is persitsted for a logged in user
+   * Get an API key for the logged in user
    *
-   * @param {string} key The API key to presist
+   * @param {boolean} sandbox Whether to return a sandbox key (default: false)
+   * @param {string} type The type of key to return (default: secret)
+   * @returns {string|null} The API key if saved
    */
-  setLoggedInKey(key) {
-    fs.writeFileSync(configFilename, key)
-  },
+  getApiKey(sandbox = false, type = 'secret') {
+    return this.getApiKeys().find(candidate => candidate.type === type && candidate.is_sandbox === sandbox)
+  }
 
   /**
    * Check that the user is logged in by checking that an API key is persisted. Note this doesn't assert the API key
@@ -88,8 +92,15 @@ module.exports = {
       return false
     }
 
-    return fs.readFileSync(configFilename).length > 0
-  },
+    return this.getApiKeys().length > 0
+  }
 
-  configFilename,
+  /**
+   * Log out the user from the API
+   */
+  logout() {
+    this.config.remove('keys')
+  }
 }
+
+module.exports = new Auth()

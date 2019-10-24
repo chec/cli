@@ -1,10 +1,10 @@
 const {Command} = require('@oclif/command')
-const loginHelper = require('../helpers/login-helper')
+const loginHelper = require('../helpers/auth')
 
 class LogoutCommand extends Command {
   async run() {
     // Blank out the key to force a logout
-    loginHelper.setLoggedInKey('')
+    loginHelper.logout()
     this.log('Successfully logged out from Chec.io')
   }
 }
