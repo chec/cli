@@ -48,7 +48,7 @@ describe('register', () => {
   )
   .stdout()
   .command(['register', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .catch(error => expect(error.message).to.contain('An unexpected error occured (RequestError)'))
+  .catch(error => expect(error.message).to.contain('An unexpected error occurred (RequestError)'))
   .it('gracefully handles non 2xx and 422 responses', ctx => {
     expect(ctx.stdout).to.not.contain('Account created successfully!')
   })

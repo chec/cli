@@ -1,7 +1,8 @@
 const {Command, flags} = require('@oclif/command')
 const ora = require('ora')
 const inquirer = require('inquirer')
-const loginHelper = require('../helpers/auth')
+const authHelper = require('../helpers/auth')
+const loginHelper = require('../helpers/login')
 const questionHelper = require('../helpers/question-helper')
 const globalFlags = require('../helpers/global-flags')
 const emailArg = require('../arguments/email')
@@ -13,12 +14,12 @@ class LoginCommand extends Command {
     const {flags: {'skip-check': skipCheck, ...flags}} = this.parse(LoginCommand)
 
     // Assert that logging in is supported
-    if (!loginHelper.loginSupported()) {
+    if (!authHelper.loginSupported()) {
       return this.error(`The login command requires a writable home directory (using "${require('os').homedir()}")`)
     }
 
     // Check if the user is already logged in
-    if (!skipCheck && loginHelper.isLoggedIn()) {
+    if (!skipCheck && authHelper.isLoggedIn()) {
       const {confirm} = await inquirer.prompt([{
         name: 'confirm',
         type: 'confirm',

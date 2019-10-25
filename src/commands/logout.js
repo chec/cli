@@ -1,11 +1,12 @@
 const {Command} = require('@oclif/command')
+const ora = require('ora')
 const loginHelper = require('../helpers/auth')
 
 class LogoutCommand extends Command {
   async run() {
     // Blank out the key to force a logout
     loginHelper.logout()
-    this.log('Successfully logged out from Chec.io')
+    ora({stream: process.stdout}).succeed('Logged out')
   }
 }
 
