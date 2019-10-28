@@ -43,13 +43,21 @@ module.exports = {
       throw new LoginError('User not found', true)
     }
 
-    const keys = JSON.parse(response.body)
+    const {body, headers} = response
+    const keys = JSON.parse(body)
 
     if (!Array.isArray(keys) || keys.length === 0) {
       throw new LoginError('An unexpected error occurred (MISSING_KEYS)')
     }
 
     // Write the key
-    authHelper.config.save({keys})
+    authHelper.config.set({keys})
+
+    if (Object.prototype.hasOwnProperty.call(headers, 'x-notification-key')) {
+      authHelper.config.set({notifications: {
+        token: headers['x-notification-token'],
+        key: headers['x-notification-key'],
+      }})
+    }
   },
 }

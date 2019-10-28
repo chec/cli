@@ -62,7 +62,9 @@ describe('auth', () => {
     it('removes the keys config', () => {
       auth.logout()
 
-      expect(configRemoveStub.calledOnceWith('keys')).to.equal(true)
+      expect(configRemoveStub.calledTwice).to.equal(true)
+      expect(configRemoveStub.calledWithExactly('keys')).to.equal(true)
+      expect(configRemoveStub.calledWithExactly('notifications')).to.equal(true)
     })
   })
 })

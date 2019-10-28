@@ -52,6 +52,7 @@ class Auth {
    */
   logout() {
     this.config.remove('keys')
+    this.config.remove('notifications')
   }
 }
 

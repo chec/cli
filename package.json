@@ -12,10 +12,14 @@
     "@oclif/plugin-help": "^2",
     "chalk": "^2.4.2",
     "cli-ux": "^5.3.2",
+    "clipboardy": "^2.1.0",
+    "date-format": "^2.1.0",
     "got": "^9.6.0",
     "inquirer": "^7.0.0",
+    "json-colorizer": "^2.2.1",
     "lodash.get": "^4.4.2",
     "ora": "3.4.0",
+    "pusher-js": "^5.0.2",
     "query-string": "^6.8.3"
   },
   "devDependencies": {

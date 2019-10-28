@@ -190,8 +190,16 @@ describe('config', () => {
       const config = new Config('fake/dir', '.checrc')
 
       expect(config.remove('two')).to.equal('2')
-
       expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '{"one":1,"three":true}')
+    })
+
+    it('does\'t choke if the key doesn\'t exist', () => {
+      readStub.returns('{"one":1,"two":"2","three":true}')
+
+      const config = new Config('fake/dir', '.checrc')
+
+      expect(config.remove('four')).to.equal(undefined)
+      expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '{"one":1,"two":"2","three":true}')
     })
   })
 })
