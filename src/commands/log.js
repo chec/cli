@@ -16,14 +16,14 @@ class LogCommand extends Command {
     try {
       await log.getFullLog()
     } catch (error) {
-      spinner.stop()
-      return this.error(`Could not fetch the log "${logId}". Error: ${error.statusCode}`)
+      spinner.fail(`Could not fetch the log "${logId}". Error: ${error.statusCode}`)
+      return
     }
 
     spinner.stop()
 
     if (raw) {
-      this.log(await log.getFullLog())
+      this.log(JSON.stringify(await log.getFullLog()))
       return
     }
 

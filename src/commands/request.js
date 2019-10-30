@@ -11,8 +11,7 @@ const ora = require('ora')
 class RequestCommand extends Command {
   async run() {
     if (!authHelper.isLoggedIn()) {
-      this.error('You must be logged in to use this command. Run `chec login` to get started.')
-      this.exit(1)
+      return this.error('You must be logged in to use this command. Run `chec login` to get started.')
     }
 
     const spinner = ora({

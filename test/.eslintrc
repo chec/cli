@@ -1,0 +1,6 @@
+{
+  "rules": {
+      // chai allows this for assertions (eg. expect().to.be.null)
+      "no-unused-expressions": "off"
+  }
+}

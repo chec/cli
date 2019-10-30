@@ -12,6 +12,12 @@ module.exports = class LogEntry {
    * @param {string} domain The domain that issued this log, for fetching further information about the log
    */
   constructor(rawEntry, domain = 'chec.io') {
+    const {log_id: logId} = rawEntry
+
+    if (!logId) {
+      throw new Error('LogEntry must be given a "raw" entry that at least contains the `log_id`')
+    }
+
     this.raw = rawEntry
     this.domain = domain
     this.printed = false
@@ -68,29 +74,12 @@ module.exports = class LogEntry {
   }
 
   /**
-   * Format a log entry into a line that can be logged on the CLI
-   *
-   * @param {boolean} utc Indicates timestamps should be UTC
-   * @return {string} A formatted string to log
-   */
-  formattedSummary(utc = false) {
-    const {status_code: statusCode, log_id: id, url} = this.raw
-
-    const date = chalk.dim(`[${this.getFormattedDate(utc)}]`)
-    const responseCodeColor = statusCode >= 200 && statusCode < 300 ? 'bgGreen' :
-      statusCode >= 300 && statusCode < 400 ? 'bgYellow' : 'bgRed'
-    const responseCode = chalk[responseCodeColor](` ${chalk.black(statusCode)} `)
-
-    return `${date} ${responseCode} ${chalk.yellow(id)} ${url}`
-  }
-
-  /**
    * Get a formatted date string for this log entry
    *
    * @param {boolean} utc Indicates timestamps should be UTC
    * @returns {string} The formatted date
    */
-  getFormattedDate(utc = false) {
+  formattedDate(utc = false) {
     const {time} = this.raw
     const suffix = utc ? 'O' : ''
     const parsedDate = dateFormat(`yyyy-MM-dd hh:mm:ss${suffix}`, new Date(time * 1000))
@@ -100,5 +89,22 @@ module.exports = class LogEntry {
     }
 
     return parsedDate.substring(0, parsedDate.length - 5)
+  }
+
+  /**
+   * Format a log entry into a line that can be logged on the CLI
+   *
+   * @param {boolean} utc Indicates timestamps should be UTC
+   * @return {string} A formatted string to log
+   */
+  formattedSummary(utc = false) {
+    const {status_code: statusCode, log_id: id, url} = this.raw
+
+    const date = chalk.dim(`[${this.formattedDate(utc)}]`)
+    const responseCodeColor = statusCode >= 200 && statusCode < 300 ? 'bgGreen' :
+      statusCode >= 300 && statusCode < 400 ? 'bgYellow' : 'bgRed'
+    const responseCode = chalk[responseCodeColor](` ${chalk.black(statusCode)} `)
+
+    return `${date} ${responseCode} ${chalk.yellow(id)} ${url}`
   }
 }

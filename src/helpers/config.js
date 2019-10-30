@@ -33,7 +33,12 @@ class Config {
   load() {
     if (!this.config) {
       this.config = {}
-      const file = fs.readFileSync(this.configPath())
+      let file
+      try {
+        file = fs.readFileSync(this.configPath())
+      } catch (error) {
+        return {}
+      }
       if (file.length === 0) {
         return this.config
       }

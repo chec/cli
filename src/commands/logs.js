@@ -1,14 +1,13 @@
 const {Command, flags} = require('@oclif/command')
-const Pusher = require('pusher-js')
 const chalk = require('chalk')
-const readline = require('readline')
 const inquirer = require('inquirer')
-const {once} = require('events')
 const ora = require('ora')
 const clipboardy = require('clipboardy')
+const readline = require('readline')
+const {once} = require('events')
 const LogEntry = require('../helpers/log-entry')
+const LogFeed = require('../helpers/log-feed')
 const globalFlags = require('../helpers/global-flags')
-const config = require('../helpers/config')
 const requestHelper = require('../helpers/request')
 
 class LogsCommand extends Command {
@@ -24,15 +23,25 @@ class LogsCommand extends Command {
     // Handle a request to start with a given number of logs
     if (tail > 0) {
       this.spinner('Fetching logs from Chec.io...')
-      this.logs = await requestHelper.request(
-        'GET',
-        '/v1/developer/logs',
-        {last: tail},
-        {domain}
-      ).then(response => JSON.parse(response.body).map(entry => new LogEntry(entry, domain)))
+      try {
+        this.logs = await requestHelper.request(
+          'GET',
+          '/v1/developer/logs',
+          {last: tail},
+          {domain}
+        ).then(response => JSON.parse(response.body).map(entry => new LogEntry(entry, domain)))
+      } catch (error) {
+        this.spinnerInstance.fail(`Failed to fetch initial logs from Chec.io. (${error.response.statusCode})`)
+        return
+      }
+
       this.spinner(null)
 
+      // Print them
       this.printLogs()
+
+      // Now prune in case lots of logs are pulled in
+      this.pruneLogs()
     }
 
     // We've tailed some logs, we can close out if we're not listening
@@ -41,18 +50,20 @@ class LogsCommand extends Command {
     }
 
     // Register the listener
-    this.registerWebsocket()
+    this.registerLogFeed()
 
     // Run the main loop
     try {
       await this.loop()
     } catch (error) {
-      this.error(error)
+      if (this.spinnerInstance) {
+        this.spinnerInstance.fail(error.message)
+      }
     }
 
     // Stop the spinner and disconnect before stopping
     this.spinner(null)
-    this.socket.disconnect()
+    this.logFeed.disconnect()
   }
 
   /**
@@ -61,6 +72,9 @@ class LogsCommand extends Command {
   async loop() {
     // Always reset the "canLog" tracker
     this.canLog = true
+
+    const navigationPrompt = 'Press "up" to navigate through the exisiting logs'
+    this.spinner(`Listening for logs from Chec.io. ${this.logs.length > 0 ? navigationPrompt : ''}`)
 
     // Wait for the user to navigation logs
     if (!await this.handleNavigation()) {
@@ -80,14 +94,11 @@ class LogsCommand extends Command {
   /**
    * Register the pusher websocket and handler for new logs coming in
    */
-  registerWebsocket() {
+  registerLogFeed() {
     const {flags: {domain, utc}} = this.parse(LogsCommand)
-    const {key, token} = config.get('notifications')
-    const socket = new Pusher(key, {cluster: 'us3'})
-    const channel = socket.subscribe(`api.logs.${token}`)
-    const navigationPrompt = this.logs.length > 0 ? 'Press "up" to navigate through the exisiting logs' : ''
+    const feed = new LogFeed()
 
-    channel.bind('log', ({log}) => {
+    feed.onLog(log => {
       const entry = new LogEntry(log, domain)
 
       // Check if we're waiting
@@ -100,7 +111,7 @@ class LogsCommand extends Command {
         entry.setPrinted()
 
         // Restart the spinner
-        this.spinner(`Listening for logs from Chec.io. ${navigationPrompt}`)
+        this.spinner('Listening for logs from Chec.io. Press "up" to navigate through the exisiting logs')
 
         // Keep logs pruned
         this.pruneLogs()
@@ -110,9 +121,7 @@ class LogsCommand extends Command {
       this.logs.push(entry)
     })
 
-    this.spinner(`Listening for logs from Chec.io. ${navigationPrompt}`)
-
-    this.socket = socket
+    this.logFeed = feed
   }
 
   /**
@@ -181,7 +190,11 @@ class LogsCommand extends Command {
 
     // Fetch the individual log entry
     this.spinner('Fetching log from Chec.io...')
-    const raw = await log.getFullLog()
+    try {
+      await log.getFullLog()
+    } catch (error) {
+      throw new Error(`Failed to fetch full log detail from Chec.io. (${error.response.statusCode})`)
+    }
     this.spinner(null)
 
     // Fetch the UTC preference from command flags
@@ -195,8 +208,8 @@ class LogsCommand extends Command {
     this.log('Press "enter" to return to streaming logs or "c" to copy to clipboard')
 
     // Register a handler to copy the response and ignore any failures
-    this.waitForKeyPress('c').then(() => {
-      clipboardy.write(JSON.stringify(raw, null, 2))
+    this.waitForKeyPress('c').then(async () => {
+      clipboardy.write(JSON.stringify(await log.getFullLog(), null, 2))
     }).catch(() => {})
 
     // Wait for them to press enter
@@ -316,7 +329,7 @@ class LogsCommand extends Command {
       this.spinnerInstance.stop()
     }
 
-    // We're done if we're trying ot cancel
+    // We're done if we're trying to cancel
     if (text === null) {
       return
     }
@@ -357,7 +370,7 @@ LogsCommand.flags = {
   history: flags.integer({
     char: 'h',
     default: 100,
-    description: 'Keep record of the given number of logs when tailing for browsing back.',
+    description: 'Keep record of the given number of logs when browsing back.',
   }),
   utc: flags.boolean({
     default: false,

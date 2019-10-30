@@ -1,7 +1,20 @@
+/* global beforeEach afterEach */
+
 const {expect, test} = require('@oclif/test')
+const sinon = require('sinon')
+const authHelper = require('../../src/helpers/auth')
 
 describe('request', () => {
   describe('run', () => {
+    let isLoggedInMock
+
+    beforeEach(() => {
+      isLoggedInMock = sinon.stub(authHelper, 'isLoggedIn').returns(true)
+    })
+    afterEach(() => {
+      isLoggedInMock.restore()
+    })
+
     test
     .stdout()
     .command(['request', 'GET', '/v1/products', '{hello:"world"}'])
@@ -34,5 +47,11 @@ describe('request', () => {
     .it('prints the error responses', ctx => {
       expect(ctx.stdout).to.contain('Request failed')
     })
+
+    test
+    .do(() => isLoggedInMock.returns(false))
+    .command(['request', 'GET', '/v1/products', '{"limit":1}'])
+    .catch(error => expect(error.message).to.contain('You must be logged in to use this command'))
+    .it('Indicates that you must be logged in')
   })
 })
