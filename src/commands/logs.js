@@ -128,7 +128,7 @@ class LogsCommand extends Command {
    * Wait for a key pressed by the user. The promise will error if an exit command in triggered by the user
    *
    * @param {string|function} matcher The key to match or a function that matches a given "key" object and returns a boolean
-   * @return {Promise<true>} Returns a promise that resolves when the given key ir pressed
+   * @return {Promise<true>} Returns a promise that resolves when the given key is pressed
    */
   async waitForKeyPress(matcher) {
     // Register a one-time event handler for a "keypress input"

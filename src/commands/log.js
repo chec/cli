@@ -47,7 +47,7 @@ LogCommand.flags = {
   }),
   utc: flags.boolean({
     default: false,
-    description: 'Display timestamps in UTC timezone',
+    description: 'Display timestamps in UTC timezone instead of the local timezone',
   }),
   ...globalFlags,
 }

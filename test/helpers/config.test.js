@@ -193,7 +193,7 @@ describe('config', () => {
       expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '{"one":1,"three":true}')
     })
 
-    it('does\'t choke if the key doesn\'t exist', () => {
+    it('works with non-existent key', () => {
       readStub.returns('{"one":1,"two":"2","three":true}')
 
       const config = new Config('fake/dir', '.checrc')
