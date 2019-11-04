@@ -16,15 +16,18 @@ describe('login', () => {
 
   let configSupportedStub
   let configGetStub
+  let configSetStub
   beforeEach(() => {
     configSupportedStub = sinon.stub(config, 'supported')
     configSupportedStub.returns(true)
     configGetStub = sinon.stub(config, 'get')
     configGetStub.returns([])
+    configSetStub = sinon.stub(config, 'set')
   })
   afterEach(() => {
     configSupportedStub.restore()
     configGetStub.restore()
+    configSetStub.restore()
     auth.keys = null
   })
 
