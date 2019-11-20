@@ -355,7 +355,7 @@ DemoStoreCommand.flags = {
   }),
 }
 
-DemoStoreCommand.description = `Log out of your account
-Log out of your account and remove the local copy of your API keys.
+DemoStoreCommand.description = `Create a demo store using Chec.io and Commerce.js
+This command will download an example project from GitHub and initialise it on your machine. You will be free to edit the downloaded code and play around with Commerce.js in client code
 `
 module.exports = DemoStoreCommand
