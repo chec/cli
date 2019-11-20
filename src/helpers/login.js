@@ -35,6 +35,17 @@ module.exports = {
 
       const {statusCode} = error.response
 
+      // 429 is a rate limiting error
+      if (statusCode === 429) {
+        throw new LoginError('You\'ve made too many requests. Have a coffee and try again later.')
+      }
+
+      // 403 is likely to mean that the user must verify their email address before logging in
+      if (statusCode === 403) {
+        const jsonBody = JSON.parse(error.response.body)
+        throw new LoginError(jsonBody.error.message)
+      }
+
       // 404 is no user was found matching the credentials. If it's not a 404 (or 2xx) then it's unexpected
       if (statusCode !== 404) {
         throw new LoginError(`An unexpected error occurred (${statusCode})`)

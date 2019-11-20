@@ -99,11 +99,39 @@ describe('login', () => {
   test
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
+  .reply(429, JSON.stringify({}))
+  )
+  .stdout()
+  .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
+  .catch(error => expect(error.message).to.contain('too many requests. Have a coffee and try again later'))
+  .it('gracefully handles rate limited responses', ctx => {
+    expect(ctx.stdout).to.not.contain('Login successful!')
+  })
+
+  test
+  .nock('http://api.chec.io', api => api
+  .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
+  .reply(403, JSON.stringify({
+    error: {
+      message: 'You must validate your email address before you can log in. Please...',
+    },
+  }))
+  )
+  .stdout()
+  .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
+  .catch(error => expect(error.message).to.contain('You must validate your email address before you can log in'))
+  .it('tells the user when they need to verify their email', ctx => {
+    expect(ctx.stdout).to.not.contain('Login successful!')
+  })
+
+  test
+  .nock('http://api.chec.io', api => api
+  .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(500, JSON.stringify({}))
   )
   .stdout()
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .catch(error => expect(error.message).to.contain('An unexpected error occurred (RequestError)'))
+  .catch(error => expect(error.message).to.contain('An unexpected error occurred (500)'))
   .it('gracefully handles non 2xx and 404 responses', ctx => {
     expect(ctx.stdout).to.not.contain('Login successful!')
   })
