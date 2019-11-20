@@ -1,0 +1,9 @@
+{
+  "description": "A test basic project",
+  "dotenv": {
+    "test": 123,
+    "string": "content",
+    "key": "%chec_pkey%",
+    "secret": "%chec_skey%"
+  }
+}

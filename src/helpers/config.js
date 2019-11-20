@@ -1,8 +1,9 @@
 const fs = require('fs')
 const _get = require('lodash.get')
+const defaultConfigDirectory = require('os').homedir()
 
 class Config {
-  constructor(configDirectory = require('os').homedir(), configFilename = '.checrc') {
+  constructor(configFilename = '.checrc', configDirectory = defaultConfigDirectory) {
     this.config = null
     this.configDirectory = fs.realpathSync(configDirectory)
     this.configFilename = configFilename
@@ -120,4 +121,4 @@ class Config {
 }
 
 module.exports = new Config()
-module.exports.Config = Config
+module.exports.makeConfig = (name, directory = defaultConfigDirectory) => new Config(name, directory)
