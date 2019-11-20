@@ -38,6 +38,9 @@ module.exports = {
       method,
       body: JSON.stringify(requestPayload),
       headers: options.headers,
+      retry: {
+        retries: 0, // Disable automatic retry
+      },
     })
   },
 }
