@@ -1,4 +1,4 @@
-const {Command} = require('@oclif/command')
+const Command = require('../base')
 const ora = require('ora')
 const loginHelper = require('../helpers/auth')
 

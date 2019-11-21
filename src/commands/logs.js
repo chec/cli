@@ -1,4 +1,5 @@
-const {Command, flags} = require('@oclif/command')
+const Command = require('../base')
+const {flags} = require('@oclif/command')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
 const ora = require('ora')
@@ -11,6 +12,10 @@ const globalFlags = require('../helpers/global-flags')
 const requestHelper = require('../helpers/request')
 
 class LogsCommand extends Command {
+  requiresAuth() {
+    return true
+  }
+
   async run() {
     const {flags: {tail, follow, domain}} = this.parse(LogsCommand)
     this.logs = []

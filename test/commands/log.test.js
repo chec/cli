@@ -4,6 +4,7 @@ const {test} = require('@oclif/test')
 const sinon = require('sinon')
 const LogEntry = require('../../src/helpers/log-entry')
 const chai = require('chai')
+const authHelper = require('../../src/helpers/auth')
 const sinonChai = require('sinon-chai')
 
 const {expect} = chai
@@ -21,6 +22,7 @@ describe('log', () => {
   let getFullLogStub
   let formattedSummaryStub
   let formattedLogStub
+  let authHelperStub
 
   beforeEach(() => {
     getFullLogStub = sinon.stub(LogEntry.prototype, 'getFullLog')
@@ -31,12 +33,16 @@ describe('log', () => {
 
     formattedLogStub = sinon.stub(LogEntry.prototype, 'formattedLog')
     formattedLogStub.resolves('a formatted log')
+
+    authHelperStub = sinon.stub(authHelper, 'isLoggedIn')
+    authHelperStub.returns(true)
   })
 
   afterEach(() => {
     getFullLogStub.restore()
     formattedSummaryStub.restore()
     formattedLogStub.restore()
+    authHelperStub.restore()
   })
 
   test
