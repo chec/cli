@@ -18,7 +18,7 @@ module.exports = {
    * @returns {Promise<Response>} A got library response promise
    */
   request(method, resource, payload = null, extraOptions = {}) {
-    const {key} = authHelper.getApiKey() || {}
+    const {key} = authHelper.getApiKey(extraOptions.sandbox || false) || {}
     const options = {
       domain: 'chec.io',
       ...extraOptions,

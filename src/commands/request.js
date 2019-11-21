@@ -1,4 +1,5 @@
 const Command = require('../base')
+const {flags} = require('@oclif/command')
 const globalFlags = require('../helpers/global-flags')
 const jsonHelper = require('../helpers/json')
 const requestHelper = require('../helpers/request')
@@ -18,7 +19,7 @@ class RequestCommand extends Command {
       stream: process.stdout,
     }).start()
 
-    const {args, flags: {domain}} = this.parse(RequestCommand)
+    const {args, flags: {domain, sandbox}} = this.parse(RequestCommand)
 
     let parsedPayload
     try {
@@ -29,7 +30,10 @@ class RequestCommand extends Command {
     }
 
     try {
-      const result = await requestHelper.request(args.method, args.resource, parsedPayload, {domain})
+      const result = await requestHelper.request(args.method, args.resource, parsedPayload, {
+        domain,
+        sandbox,
+      })
       spinner.stop()
       this.log(jsonHelper.prettify(result.body))
     } catch (error) {
@@ -42,7 +46,8 @@ class RequestCommand extends Command {
 RequestCommand.description = `Run abstract API request
 Runs an arbitrary API request given the HTTP method, endpoint, and input payload.
 
-Data should be provided as a JSON object.
+Data should be provided as a JSON object. You may also use \`--sandbox\` to use
+sandbox API keys.
 `
 
 RequestCommand.args = [
@@ -50,7 +55,7 @@ RequestCommand.args = [
     name: 'method',
     required: true,
     description: 'HTTP method',
-    options: ['GET', 'POST', 'PUT', 'DELETE'],
+    options: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   },
   {
     name: 'resource',
@@ -66,12 +71,17 @@ RequestCommand.args = [
 
 RequestCommand.flags = {
   ...globalFlags,
+  sandbox: flags.boolean({
+    description: 'Use sandbox API keys',
+    default: false,
+  }),
 }
 
 RequestCommand.examples = [
   '$ chec request GET /v1/products',
   '$ chec request GET /v1/orders',
   '$ chec request GET /v1/products \'{"limit":1}\'',
+  '$ chec request GET /v1/products \'{"limit":1}\' --sandbox',
 ]
 
 module.exports = RequestCommand
