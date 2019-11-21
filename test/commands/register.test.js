@@ -1,77 +1,104 @@
+/* global beforeEach, afterEach, process */
 const {expect, test} = require('@oclif/test')
 const inquirer = require('inquirer')
+const {cli} = require('cli-ux')
 const sinon = require('sinon')
+const auth = require('../../src/helpers/auth')
+const config = require('../../src/helpers/config')
+const LoginCommand = require('../../src/commands/login')
 
 describe('register', () => {
-  const base = test
-  .nock('http://api.chec.io', api => api
-  .put('/v1/merchants')
-  .reply(200, JSON.stringify({}))
-  )
-  .stdout()
+  let configGetStub
+  let originalPlatform
 
-  base
-  .command(['register', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .it('can register with provided args', ctx => {
-    expect(ctx.stdout).to.contain('Account created successfully!')
+  beforeEach(() => {
+    originalPlatform = process.platform
+    configGetStub = sinon.stub(config, 'get')
+    configGetStub.returns([])
   })
 
-  base
+  afterEach(() => {
+    configGetStub.restore()
+    Object.defineProperty(process, 'platform', {
+      value: originalPlatform,
+    })
+    auth.keys = null
+  })
+
+  test
   .stub(inquirer, 'prompt', sinon.fake.returns({
-    email: 'test@example.com',
-    password: 'abcd1234',
+    confirm: true,
   }))
+  // mock the "press any key to continue" prompt to not continue
+  .stub(cli, 'anykey', () => sinon.stub().rejects())
+  .do(() => {
+    configGetStub.returns(['key'])
+  })
+  .stdout()
   .command(['register'])
-  .it('prompts for information that is required', ctx => {
-    expect(ctx.stdout).to.contain('Account created successfully!')
-    expect(inquirer.prompt.calledOnce).to.equal(true)
-    expect(inquirer.prompt.lastArg[0]).to.include({name: 'email', message: 'Please enter your email address'})
-    expect(inquirer.prompt.lastArg[1]).to.include({name: 'password', message: 'Enter a password'})
-  })
-
-  base
-  .stub(inquirer, 'prompt', sinon.fake.returns({
-    email: 'test@example.com',
-    password: 'abcd1234',
-  }))
-  .command(['register', '-e', 'bad', '-p', 'bad'])
-  .it('prompts for information if arguments are invalid', () => {
-    expect(inquirer.prompt.calledOnce).to.equal(true)
-    expect(inquirer.prompt.lastArg[0]).to.include({name: 'email', message: 'The provided email was invalid. Please enter your email address'})
-    expect(inquirer.prompt.lastArg[1]).to.include({name: 'password', message: 'Your password must be at least 8 characters. Enter a password'})
+  .catch(error => expect(error.code).to.equal('EEXIT'))
+  .it('Will prompt for confirmation if a user is already logged in and continue when told "yes"', ctx => {
+    expect(ctx.stdout).to.contain('Logged out')
   })
 
   test
-  .nock('http://api.chec.io', api => api
-  .put('/v1/merchants')
-  .reply(500, JSON.stringify({}))
-  )
+  .stub(inquirer, 'prompt', sinon.fake.returns({
+    confirm: false,
+  }))
+  .stub(cli, 'anykey', () => sinon.stub().resolves())
+  .do(() => {
+    configGetStub.returns(['key'])
+  })
   .stdout()
-  .command(['register', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .catch(error => expect(error.message).to.contain('An unexpected error occurred (500)'))
-  .it('gracefully handles non 2xx and 422 responses', ctx => {
-    expect(ctx.stdout).to.not.contain('Account created successfully!')
+  .command(['register'])
+  .it('Will prompt for confirmation if a user is already logged in and stop when told "no"', ctx => {
+    expect(ctx.stdout).not.to.contain('Logged out')
   })
 
   test
-  .nock('http://api.chec.io', api => api
-  .put('/v1/merchants')
-  .once()
-  .reply(422, JSON.stringify({error: {errors: {
-    email: ['It is bad'],
-  }}}))
-  .put('/v1/merchants')
-  .reply(200, JSON.stringify({}))
-  )
-  .stub(inquirer, 'prompt', sinon.fake.returns({
-    email: 'test+1@example.com',
-  }))
+  // mock the "press any key to continue" prompt to not continue
+  .stub(cli, 'anykey', () => sinon.stub().rejects())
   .stdout()
-  .command(['register', '-e', 'test@example.com', '-p', 'abcd1234'])
-  .it('gracefully handles 422 responses and continues to prompt user', ctx => {
-    expect(inquirer.prompt.calledOnce).to.equal(true)
-    expect(inquirer.prompt.lastArg).to.have.length(1)
-    expect(inquirer.prompt.lastArg[0]).to.include({name: 'email', message: 'Please enter your email address'})
-    expect(ctx.stdout).to.contain('Account created successfully!')
+  .command(['register'])
+  .catch(error => expect(error.code).to.equal('EEXIT'))
+  .it('quits when you press "q" in "open browser" confirmation', ctx => {
+    expect(ctx.stdout).to.contain('This will open the Chec registration page in your browser')
+    expect(ctx.stdout).not.to.contain('Logged out')
+  })
+
+  test
+  .stdout()
+  .stub(cli, 'anykey', () => sinon.stub().resolves())
+  .stub(cli, 'open', () => sinon.stub().returns('foo'))
+  .stub(LoginCommand, 'run', sinon.fake.returns(true))
+  .command(['register'])
+  .it('opens the registration page in the browser', ctx => {
+    expect(ctx.stdout).to.contain('When you\'ve completed your registration')
+  })
+
+  test
+  .stub(cli, 'anykey', () => sinon.stub().resolves())
+  .stub(LoginCommand, 'run', sinon.fake.returns(true))
+  .do(() => {
+    Object.defineProperty(process, 'platform', {
+      value: 'MockOS',
+    })
+  })
+  .stdout()
+  .command(['register'])
+  .it('shows the registration page URL when auto-open fails', ctx => {
+    expect(ctx.stdout).to.contain('Unable to automatically open the registration page in your browser')
+    expect(ctx.stdout).to.contain('dashboard.chec.io/signup')
+  })
+
+  test
+  .stub(cli, 'anykey', () => sinon.stub().resolves())
+  .stub(cli, 'open', () => sinon.stub().returns('foo'))
+  .stub(LoginCommand, 'run', sinon.fake.returns(true))
+  .stdout()
+  .command(['register'])
+  .it('calls the login command', ctx => {
+    expect(ctx.stdout).to.contain('enter your credentials to log in')
+    expect(LoginCommand.run.calledOnce).to.equal(true)
   })
 })

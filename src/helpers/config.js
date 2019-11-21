@@ -110,6 +110,13 @@ class Config {
   configPath() {
     return `${this.configDirectory}${require('path').sep}${this.configFilename}`
   }
+
+  /**
+   * Clear cached config
+   */
+  clearCache() {
+    this.config = null
+  }
 }
 
 module.exports = new Config()

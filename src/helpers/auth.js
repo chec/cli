@@ -51,6 +51,7 @@ class Auth {
    * Log out the user from the API
    */
   logout() {
+    this.keys = null
     this.config.remove('keys')
     this.config.remove('notifications')
   }
