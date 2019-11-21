@@ -1,6 +1,5 @@
-const {Command} = require('@oclif/command')
+const Command = require('../base')
 const globalFlags = require('../helpers/global-flags')
-const authHelper = require('../helpers/auth')
 const jsonHelper = require('../helpers/json')
 const requestHelper = require('../helpers/request')
 const ora = require('ora')
@@ -9,11 +8,11 @@ const ora = require('ora')
  * Runs an arbitrary HTTP request against the Chec API
  */
 class RequestCommand extends Command {
-  async run() {
-    if (!authHelper.isLoggedIn()) {
-      return this.error('You must be logged in to use this command. Run `chec login` to get started.')
-    }
+  requiresAuth() {
+    return true
+  }
 
+  async run() {
     const spinner = ora({
       text: 'Processing...',
       stream: process.stdout,

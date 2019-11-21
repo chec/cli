@@ -1,4 +1,4 @@
-const {Command} = require('@oclif/command')
+const Command = require('../base')
 const chalk = require('chalk')
 const {cli} = require('cli-ux')
 const process = require('process')

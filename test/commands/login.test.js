@@ -17,6 +17,7 @@ describe('login', () => {
   let configSupportedStub
   let configGetStub
   let configSetStub
+
   beforeEach(() => {
     configSupportedStub = sinon.stub(config, 'supported')
     configSupportedStub.returns(true)
@@ -24,6 +25,7 @@ describe('login', () => {
     configGetStub.returns([])
     configSetStub = sinon.stub(config, 'set')
   })
+
   afterEach(() => {
     configSupportedStub.restore()
     configGetStub.restore()

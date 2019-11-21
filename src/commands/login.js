@@ -1,4 +1,5 @@
-const {Command, flags} = require('@oclif/command')
+const Command = require('../base')
+const {flags} = require('@oclif/command')
 const ora = require('ora')
 const inquirer = require('inquirer')
 const authHelper = require('../helpers/auth')
@@ -80,4 +81,3 @@ LoginCommand.flags = {
 }
 
 module.exports = LoginCommand
-

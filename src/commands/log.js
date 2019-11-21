@@ -1,10 +1,15 @@
-const {Command, flags} = require('@oclif/command')
+const Command = require('../base')
+const {flags} = require('@oclif/command')
 const chalk = require('chalk')
 const ora = require('ora')
 const globalFlags = require('../helpers/global-flags')
 const LogEntry = require('../helpers/log-entry')
 
 class LogCommand extends Command {
+  requiresAuth() {
+    return true
+  }
+
   async run() {
     const {args: {logId}, flags: {domain, raw, utc}} = this.parse(LogCommand)
     const log = new LogEntry({log_id: logId}, domain) // eslint-disable-line camelcase

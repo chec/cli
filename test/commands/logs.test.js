@@ -11,6 +11,7 @@ const stripAnsi = require('strip-ansi')
 const LogFeed = require('../../src/helpers/log-feed')
 const LogEntry = require('../../src/helpers/log-entry')
 const requestHelper = require('../../src/helpers/request')
+const authHelper = require('../../src/helpers/auth')
 
 const {expect} = chai
 chai.use(sinonChai)
@@ -80,6 +81,7 @@ const base = test
 describe('logs', () => {
   let consoleClearMock
   let testTimeout
+  let authMock
 
   beforeEach(() => {
     consoleClearMock = sinon.stub(console, 'clear')
@@ -89,6 +91,9 @@ describe('logs', () => {
     testTimeout = setTimeout(() => {
       emitKeypress('c', true)
     }, 4000)
+
+    authMock = sinon.stub(authHelper, 'isLoggedIn')
+    authMock.returns(true)
   })
 
   afterEach(() => {
@@ -96,6 +101,7 @@ describe('logs', () => {
     clearTimeout(testTimeout)
     fakeFeed.onLogFake.restore()
     fakeFeed.disconnectFake.restore()
+    authMock.restore()
   })
 
   // Basic log display:
