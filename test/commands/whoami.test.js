@@ -16,14 +16,6 @@ describe('whoami', () => {
     })
 
     test
-    .do(() => isLoggedInMock.returns(false))
-    .stdout()
-    .command(['whoami'])
-    .it('tells you when you aren\'t logged in', ctx => {
-      expect(ctx.stdout).to.contain('Not sure, you aren\'t logged in')
-    })
-
-    test
     .nock('https://api.chec.io', api => api
     .get('/v1/developer/user')
     .once()

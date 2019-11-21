@@ -1,6 +1,5 @@
 const Command = require('../base')
 const globalFlags = require('../helpers/global-flags')
-const authHelper = require('../helpers/auth')
 const requestHelper = require('../helpers/request')
 const ora = require('ora')
 const chalk = require('chalk')
@@ -9,11 +8,11 @@ const chalk = require('chalk')
  * Tells you who you're logged in as
  */
 class WhoamiCommand extends Command {
-  async run() {
-    if (!authHelper.isLoggedIn()) {
-      return this.log(`Not sure, you aren't logged in yet. Run ${chalk.yellow('chec login')} to continue.`)
-    }
+  requiresAuth() {
+    return true
+  }
 
+  async run() {
     const spinner = ora({
       text: 'Processing...',
       stream: process.stdout,
