@@ -6,8 +6,9 @@ const chai = require('chai')
 const sinonChai = require('sinon-chai')
 const {ObjectWritableMock} = require('stream-mock')
 const process = require('process')
+const stripAnsi = require('strip-ansi')
 const Auth = require('../../src/helpers/auth')
-const spawnPromise = require('../../src/helpers/spawn-promise')
+const spawner = require('../../src/helpers/spawner')
 const envWriter = require('../../src/helpers/env-writer')
 const config = require('../../src/helpers/config')
 const {expect, test} = require('@oclif/test')
@@ -37,6 +38,19 @@ const mockCache = new class {
   }
 }()
 
+const mockSpawner = new class {
+  constructor() {
+    this.reset()
+  }
+
+  reset() {
+    this.withSpinner = sinon.stub().returnsThis()
+    this.onComplete = sinon.stub().returnsThis()
+    this.streamOutput = sinon.stub().returnsThis()
+    this.run = sinon.stub().resolves()
+  }
+}()
+
 const withStoreChoice = (ocTest, slug) => ocTest.stub(inquirer, 'prompt', sinon.fake.returns({
   slug,
 }))
@@ -50,6 +64,7 @@ const storeManifest = [{
   name: 'Second test store',
   githubSlug: 'chec/fake',
   branch: 'test-branch',
+  description: 'Long description that should be trimmed down because it is just really long and annoying',
 }, {
   slug: 'npm-test',
   name: 'Third test store',
@@ -64,9 +79,9 @@ const storeManifest = [{
   buildScripts: ['fake'],
 }]
 
-const withStoreRepoMocked = ocTest => ocTest.nock('https://raw.githubusercontent.com', api => api
+const withStoreRepoMocked = (ocTest, manifest = storeManifest) => ocTest.nock('https://raw.githubusercontent.com', api => api
 .get('/chec/example-stores/master/manifest.json')
-.reply(200, JSON.stringify(storeManifest))
+.reply(200, JSON.stringify(manifest))
 )
 
 const mockZipStream = (ocTest, zipName, repo, branch = 'master') => ocTest.nock('https://github.com', api => api
@@ -99,17 +114,57 @@ describe('demo-store', () => {
     writerMock.destroy()
     streamWriter.create.restore()
     readdirMock.restore()
+    mockSpawner.reset()
   })
 
-  let base = withStoreRepoMocked(test)
+  const applyStubs = ocTest => ocTest
   .stub(config, 'makeConfig', () => mockCache)
+  .stub(Auth, 'isLoggedIn', () => true)
   .finally(() => mockCache.reset())
+
+  let base = applyStubs(withStoreRepoMocked(test))
+
+  withStoreChoice(base, 'fake')
+  .stdout()
+  .command('demo-store')
+  .it('Will prompt the user for the stores that were fetched from the example-stores repo', () => {
+    expect(inquirer.prompt).to.have.been.called
+    const callArgs = inquirer.prompt.firstCall.args[0]
+    expect(callArgs).to.be.an('array').that.has.length(1)
+    expect(callArgs[0]).to.include({
+      type: 'list',
+      name: 'slug',
+      message: 'Please choose a demo store to install:',
+    })
+    expect(callArgs[0]).to.have.property('choices')
+
+    const {slugs, options} = storeManifest.reduce((acc, store) => ({
+      slugs: [...acc.slugs, store.slug],
+      options: [...acc.options, `${store.name} (${store.slug}): `],
+    }), {slugs: [], options: []})
+
+    options[1] += 'Long description that should be trimm...'
+
+    expect(callArgs[0].choices).to.satisfy(choices => choices.every(choice =>
+      slugs.includes(choice.value) && options.includes(stripAnsi(choice.name))
+    ))
+  })
 
   withStoreChoice(base, 'fake')
   .stdout()
   .command('demo-store')
   .it('Will indicate the selected store does not exist', ctx => {
     expect(ctx.stdout).to.contain('Could not find store matching "fake"')
+  })
+
+  mockZipStream(applyStubs(withStoreRepoMocked(test, [storeManifest[0]])), 'basic-project', 'fake')
+  .stdout()
+  .stub(inquirer, 'prompt', sinon.stub())
+  .stub(process, 'cwd', () => '/home/dir')
+  .command('demo-store')
+  .it('Will not ask for a store if there is only one in the store manifest', function () {
+    this.slow(600)
+    expect(inquirer.prompt).not.to.have.been.called
   })
 
   withStoreChoice(base, 'fake')
@@ -204,11 +259,19 @@ describe('demo-store', () => {
     expect(envMock.set).to.have.been.calledWith('secret', 'secret')
   })
 
+  test
+  .stub(Auth, 'isLoggedIn', () => false)
+  .command(['demo-store', 'basic', '/given/directory'])
+  .catch(error => {
+    expect(stripAnsi(error.message)).to.contain('You must be logged in to use this command. Please run chec login then try again.')
+  })
+  .it('Will indicate if API keys cannot be written without being logged in')
+
   mockZipStream(mockEnv(base), 'env-project', 'fake')
   .stub(Auth, 'isLoggedIn', () => false)
   .stdout()
-  .command(['demo-store', 'basic', '/given/directory'])
-  .it('Will indicate if API keys cannot be written without being logged in', function (ctx) {
+  .command(['demo-store', 'basic', '/given/directory', '--no-login'])
+  .it('Will indicate if API keys cannot be written without being logged in when ignoring login requirement', function (ctx) {
     this.slow(600)
 
     expect(ctx.stdout).to.contain('Downloaded basic to /given/directory')
@@ -234,32 +297,32 @@ describe('demo-store', () => {
   .it('Validates env settings given as flags', function (ctx) {
     this.slow(600)
 
-    expect(ctx.stdout).to.contain('Could not understand env definition: test. Please provide env settings as key=value. Eg. --env key=value')
+    expect(ctx.stdout).to.contain('Could not parse env definition: test. Please provide env settings as key=value. Eg. --env key=value')
   })
 
   mockZipStream(base, 'basic-project', 'fake')
-  .stub(spawnPromise, 'spawn', sinon.stub().resolves())
+  .stub(spawner, 'create', sinon.stub().returns(mockSpawner))
   .stdout()
   .command(['demo-store', 'npm-test', '/given/directory'])
   .it('Runs NPM install and scripts if configured', function () {
     this.slow(600)
 
-    expect(spawnPromise.spawn).to.have.callCount(2)
+    expect(spawner.create).to.have.callCount(2)
 
-    expect(spawnPromise.spawn).to.have.been.calledWith('npm', ['--prefix', '/given/directory', 'install'])
-    expect(spawnPromise.spawn).to.have.been.calledWith('npm', ['--prefix', '/given/directory', 'run', 'fake'])
+    expect(spawner.create).to.have.been.calledWith('npm', ['--prefix', '/given/directory', 'install'])
+    expect(spawner.create).to.have.been.calledWith('npm', ['--prefix', '/given/directory', 'run', 'fake'])
   })
 
   mockZipStream(base, 'basic-project', 'fake')
-  .stub(spawnPromise, 'spawn', sinon.stub().resolves())
+  .stub(spawner, 'create', sinon.stub().returns(mockSpawner))
   .stdout()
   .command(['demo-store', 'yarn-test', '/given/directory'])
   .it('Uses yarn instead of NPM if configured', function () {
     this.slow(600)
 
-    expect(spawnPromise.spawn).to.have.callCount(2)
+    expect(spawner.create).to.have.callCount(2)
 
-    expect(spawnPromise.spawn).to.have.been.calledWith('yarn', ['--cwd', '/given/directory', 'install'])
-    expect(spawnPromise.spawn).to.have.been.calledWith('yarn', ['--cwd', '/given/directory', 'run', 'fake'])
+    expect(spawner.create).to.have.been.calledWith('yarn', ['--cwd', '/given/directory', 'install'])
+    expect(spawner.create).to.have.been.calledWith('yarn', ['--cwd', '/given/directory', 'run', 'fake'])
   })
 })

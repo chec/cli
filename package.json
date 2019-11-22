@@ -20,6 +20,7 @@
     "json-colorizer": "^2.2.1",
     "key-value-file": "^1.0.7",
     "lodash.get": "^4.4.2",
+    "log-update": "^3.3.0",
     "ora": "3.4.0",
     "pusher-js": "^5.0.2",
     "query-string": "^6.8.3",

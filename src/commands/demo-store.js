@@ -1,4 +1,5 @@
-const {Command, flags} = require('@oclif/command')
+const {flags} = require('@oclif/command')
+const Command = require('../base')
 const chalk = require('chalk')
 const unzipper = require('unzipper')
 const ora = require('ora')
@@ -6,13 +7,18 @@ const got = require('got')
 const fs = require('fs')
 const inquirer = require('inquirer')
 const {sep} = require('path')
-const spawnPromise = require('../helpers/spawn-promise')
+const spawner = require('../helpers/spawner')
 const Auth = require('../helpers/auth')
 const {makeConfig} = require('../helpers/config')
 const envWriter = require('../helpers/env-writer')
 const streamWriter = require('../helpers/stream-writer')
 
 class DemoStoreCommand extends Command {
+  requiresAuth() {
+    const {flags: {'no-login': noLogin}} = this.parse(DemoStoreCommand)
+    return !noLogin
+  }
+
   async run() {
     this.cache = makeConfig('.checcache')
     let {args: {store}} = this.parse(DemoStoreCommand)
@@ -266,18 +272,21 @@ ${chalk.dim(manifest.description)}`)
     // Prep the args that will be added to the run command
     const baseArgs = npm === 'yarn' ? ['--cwd', cwd] : ['--prefix', cwd]
 
-    const spinner = ora({
-      text: 'Installing NPM dependencies...',
-      stream: process.stdout,
-    }).start()
-
     // Spawn a subprocess for dependency installation
-    await spawnPromise.spawn(command, [...baseArgs, 'install'])
-    spinner.stop()
+    await spawner
+    .create(command, [...baseArgs, 'install'], {env: {
+      FORCE_COLOR: true,
+      npm_config_color: 'always', // eslint-disable-line camelcase
+      npm_config_progress: true, // eslint-disable-line camelcase
+      ...process.env,
+    }})
+    .withSpinner('Installing NPM dependencies...')
+    .streamOutput(true)
+    .run()
 
     // Loop through additional scripts and await their execution
     buildScripts.forEach(async script => {
-      await spawnPromise.spawn(command, [...baseArgs, 'run', script], {stdio: 'inherit'})
+      await spawner.create(command, [...baseArgs, 'run', script], {stdio: 'inherit'}).run()
     })
   }
 
@@ -290,7 +299,7 @@ ${chalk.dim(manifest.description)}`)
       env.forEach(envDefinition => {
         const matches = envDefinition.match(/^([\w\d_]+)=(.+)$/i)
         if (!matches) {
-          this.log(chalk.red(`Could not understand env definition: ${envDefinition}. Please provide env settings as key=value. Eg. --env key=value`))
+          this.log(chalk.red(`Could not parse env definition: ${envDefinition}. Please provide env settings as key=value. Eg. --env key=value`))
           return
         }
 
@@ -352,6 +361,10 @@ DemoStoreCommand.flags = {
   env: flags.string({
     description: 'Extra env variables to set for a .env file in the installed project',
     multiple: true,
+  }),
+  'no-login': flags.boolean({
+    description: 'Optionally skip the login requirement. This is likely to be incompatible with example stores that are available for download',
+    default: false,
   }),
 }
 
