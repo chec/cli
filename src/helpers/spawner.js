@@ -61,11 +61,12 @@ class Spawner {
    * Indicate whether the output should be output to the stdout (and stderr) and optionally if it should clear when the process is complete
    * Note that the output is streamed by default, unless a spinner is configured.
    *
+   * @param {boolean} stream Indicates if the output should stream
    * @param {boolean} clearOnComplete If the streamed output should be removed when the process completes
    * @returns {Spawner} Returns this object for a fluent interface
    */
-  streamOutput(clearOnComplete = false) {
-    this.stream = true
+  streamOutput(stream = true, clearOnComplete = false) {
+    this.stream = stream
     this.clearOnComplete = clearOnComplete
     return this
   }
@@ -79,7 +80,7 @@ class Spawner {
     return new Promise((resolve, reject) => {
       // Determine if we're streaming the output. If it's not explicitly declared we check if a spinner is configured
       const stream = this.stream === null ? !this.spinner : this.stream
-      const stdio = !stream || this.clearOnComplete ? ['inherit', 'pipe', 'pipe'] : 'inherit'
+      const stdio = !stream || this.spinner || this.clearOnComplete ? ['inherit', 'pipe', 'pipe'] : 'inherit'
       const providedOptions = this.spawnArgs[2] || {}
       const options = {
         ...providedOptions,
@@ -93,16 +94,13 @@ class Spawner {
       let stderrLogs = ''
 
       const withPausedSpinner = callback => {
-        if (!spinner) {
-          return callback()
-        }
         spinner.stop()
         const out = callback()
         spinner.start()
         return out
       }
 
-      if (this.clearOnComplete) {
+      if (stream && (this.spinner || this.clearOnComplete)) {
         if (ps.stdout) {
           ps.stdout.setEncoding('utf8').on('data', data => {
             stdoutLogs += data
@@ -123,12 +121,16 @@ class Spawner {
 
       ps.on('close', code => {
         if (code !== 0) {
+          if (spinner) {
+            spinner.stop()
+          }
           reject(code)
           return
         }
-        if (this.clearOnComplete) {
-          logUpdate.clear()
-          logUpdate.stderr.clear()
+        if (stream) {
+          const method = this.clearOnComplete ? 'clear' : 'done'
+          logUpdate[method]()
+          logUpdate.stderr[method]()
         }
         if (spinner) {
           if (this.completeMessage) {

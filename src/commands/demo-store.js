@@ -281,7 +281,7 @@ ${chalk.dim(manifest.description)}`)
       ...process.env,
     }})
     .withSpinner('Installing NPM dependencies...')
-    .streamOutput(true)
+    .streamOutput(true, true)
     .run()
 
     // Loop through additional scripts and await their execution
