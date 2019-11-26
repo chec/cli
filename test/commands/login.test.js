@@ -14,32 +14,25 @@ describe('login', () => {
     {key: 'sk_123', type: 'secret', is_sandbox: false}, // eslint-disable-line camelcase
   ])
 
-  let configSupportedStub
-  let configGetStub
   let configSetStub
 
   beforeEach(() => {
-    configSupportedStub = sinon.stub(config, 'supported')
-    configSupportedStub.returns(true)
-    configGetStub = sinon.stub(config, 'get')
-    configGetStub.returns([])
     configSetStub = sinon.stub(config, 'set')
   })
 
   afterEach(() => {
-    configSupportedStub.restore()
-    configGetStub.restore()
     configSetStub.restore()
     auth.keys = null
   })
 
-  test
+  const base = test.stub(auth, 'loginSupported', () => true)
+
+  base
+  .stub(auth, 'isLoggedIn', () => true)
   .stub(inquirer, 'prompt', sinon.fake.returns({
     confirm: false,
   }))
-  .do(() => {
-    configGetStub.returns(['key'])
-  })
+  .stdout()
   .command('login')
   .it('Will prompt for confirmation if a user is already logged in and exit when told "no"', () => {
     expect(inquirer.prompt.lastArg[0]).to.include({
@@ -48,32 +41,30 @@ describe('login', () => {
     })
   })
 
-  const base = test
+  const successBase = base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(200, fakeSuccessfulResponse)
   )
   .stdout()
 
-  base
+  successBase
   .stub(inquirer, 'prompt', sinon.fake.returns({
     confirm: true,
   }))
-  .do(() => {
-    configGetStub.returns(['key'])
-  })
+  .stub(auth, 'isLoggedIn', () => true)
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .it('Will prompt for confirmation if a user is already logged in and continue when told "yes"', ctx => {
     expect(ctx.stdout).to.contain('Login successful!')
   })
 
-  base
+  successBase
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .it('can login with provided args', ctx => {
     expect(ctx.stdout).to.contain('Login successful!')
   })
 
-  base
+  successBase
   .stub(inquirer, 'prompt', sinon.fake.returns({
     email: 'test@example.com',
     password: 'abcd1234',
@@ -86,7 +77,7 @@ describe('login', () => {
     expect(inquirer.prompt.lastArg[1]).to.include({name: 'password', message: 'Enter password'})
   })
 
-  base
+  successBase
   .stub(inquirer, 'prompt', sinon.fake.returns({
     email: 'test@example.com',
     password: 'abcd1234',
@@ -98,7 +89,7 @@ describe('login', () => {
     expect(inquirer.prompt.lastArg[1]).to.include({name: 'password', message: 'Your password must be at least 8 characters. Enter password'})
   })
 
-  test
+  base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(429, JSON.stringify({}))
@@ -110,7 +101,7 @@ describe('login', () => {
     expect(ctx.stdout).to.not.contain('Login successful!')
   })
 
-  test
+  base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(403, JSON.stringify({
@@ -126,7 +117,7 @@ describe('login', () => {
     expect(ctx.stdout).to.not.contain('Login successful!')
   })
 
-  test
+  base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(500, JSON.stringify({}))
@@ -138,7 +129,7 @@ describe('login', () => {
     expect(ctx.stdout).to.not.contain('Login successful!')
   })
 
-  test
+  base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(404, JSON.stringify({}))
@@ -159,17 +150,16 @@ describe('login', () => {
     expect(ctx.stdout).to.contain('Login successful!')
   })
 
+  // Explicitly not using "base" here as we're stubbing `loginSupported` differently
   test
-  .do(() => {
-    configSupportedStub.returns(false)
-  })
+  .stub(auth, 'loginSupported', () => false)
   .command(['login', '-e', 'test@example.com', '-p', 'abcd1234'])
   .catch(error => {
     expect(error.message).to.contain('The login command requires a writable home directory')
   })
   .it('Will advise when config is unwritable', () => {})
 
-  test
+  base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=bob%2Bplus%40example.com&password=qw3r%2By12')
   .reply(200, fakeSuccessfulResponse)
@@ -180,7 +170,7 @@ describe('login', () => {
     expect(ctx.stdout).to.contain('Login successful!')
   })
 
-  test
+  base
   .nock('http://api.chec.io', api => api
   .get('/v1/developer/login/issue-keys?email=test%40example.com&password=abcd1234')
   .reply(200, JSON.stringify([]))

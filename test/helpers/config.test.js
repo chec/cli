@@ -2,7 +2,7 @@
 
 const fs = require('fs')
 const sinon = require('sinon')
-const {Config} = require('../../src/helpers/config')
+const {makeConfig} = require('../../src/helpers/config')
 const chai = require('chai')
 const sinonChai = require('sinon-chai')
 
@@ -23,27 +23,27 @@ describe('config', () => {
     fs.realpathSync.restore()
     sinon.stub(fs, 'realpathSync').returns('after/realpath')
 
-    const config = new Config('before/realpath')
+    const config = makeConfig('before/realpath')
 
     expect(config.configDirectory).to.equal('after/realpath')
   })
 
   describe('supported', () => {
     it('should return false if access is not on the config directory', () => {
-      const config = new Config('fake/dir')
+      const config = makeConfig('fake/dir')
       sinon.stub(fs, 'accessSync').throws()
       expect(config.supported()).to.equal(false)
     })
 
     it('should return false if the config file cannot be opened', () => {
-      const config = new Config('fake/dir')
+      const config = makeConfig('fake/dir')
       sinon.stub(fs, 'accessSync')
       sinon.stub(fs, 'openSync').throws()
       expect(config.supported()).to.equal(false)
     })
 
     it('should return true if all fs commands don\'t throw', () => {
-      const config = new Config('fake/dir')
+      const config = makeConfig('fake/dir')
       sinon.stub(fs, 'accessSync')
       sinon.stub(fs, 'openSync')
       sinon.stub(fs, 'closeSync')
@@ -59,7 +59,7 @@ describe('config', () => {
     it('should return parsed json from the config file', () => {
       readStub.returns(someJSON)
 
-      const config = (new Config('fake/dir', '.checrc')).load()
+      const config = (makeConfig('.checrc', 'fake/dir')).load()
 
       expect(readStub).to.have.been.calledOnceWith('fake/dir/.checrc')
 
@@ -70,7 +70,7 @@ describe('config', () => {
     it('should only read the file once per run', () => {
       readStub.returns(someJSON)
 
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
       config.load() // #1
       const result = config.load() // #2
 
@@ -83,7 +83,7 @@ describe('config', () => {
     it('should still return an object with no content in the config file', () => {
       readStub.returns('')
 
-      const config = (new Config('fake/dir', '.checrc')).load()
+      const config = (makeConfig('.checrc', 'fake/dir')).load()
 
       expect(config).to.be.an('object')
     })
@@ -92,7 +92,7 @@ describe('config', () => {
       readStub.returns('%!@#%!(@#$!@$ bad json')
       const writeStub = sinon.stub(fs, 'writeFileSync')
 
-      const config = (new Config('fake/dir', '.checrc')).load()
+      const config = (makeConfig('.checrc', 'fake/dir')).load()
 
       expect(config).to.be.an('object')
       expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '')
@@ -107,7 +107,7 @@ describe('config', () => {
     it('should allow fetching config with paths', () => {
       readStub.returns(JSON.stringify({some: {deeply: {nested: {value: 'one'}}}}))
 
-      expect((new Config('fake/dir', '.checrc')).get('some.deeply.nested.value')).to.equal('one')
+      expect((makeConfig('.checrc', 'fake/dir')).get('some.deeply.nested.value')).to.equal('one')
     })
   })
 
@@ -121,17 +121,17 @@ describe('config', () => {
 
     it('saves the given attributes after converting to json', () => {
       readStub.returns('')
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       config.save({test: 'one'})
 
       expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '{"test":"one"}')
     })
 
-    it('overwrites existing config with new config', () => {
+    it('overwrites existing config with makeConfig', () => {
       readStub.returns('{"existing":"yes"}')
 
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       config.save({test: 'one'})
 
@@ -140,7 +140,7 @@ describe('config', () => {
 
     it('does not merge attributes', () => {
       readStub.returns('{"test":["one","two"]}')
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       config.save({test: ['three', 'four']})
 
@@ -156,10 +156,10 @@ describe('config', () => {
       readStub = sinon.stub(fs, 'readFileSync')
     })
 
-    it('combines existing config with new config', () => {
+    it('combines existing config with makeConfig', () => {
       readStub.returns('{"existing":"yes"}')
 
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       config.set({test: 'one'})
 
@@ -168,7 +168,7 @@ describe('config', () => {
 
     it('overwrites existing settings with new ones', () => {
       readStub.returns('{"existing":"yes","test":"something"}')
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       config.set({test: 'one'})
 
@@ -187,7 +187,7 @@ describe('config', () => {
     it('can remove specific config items and return the removed value', () => {
       readStub.returns('{"one":1,"two":"2","three":true}')
 
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       expect(config.remove('two')).to.equal('2')
       expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '{"one":1,"three":true}')
@@ -196,7 +196,7 @@ describe('config', () => {
     it('works with non-existent key', () => {
       readStub.returns('{"one":1,"two":"2","three":true}')
 
-      const config = new Config('fake/dir', '.checrc')
+      const config = makeConfig('.checrc', 'fake/dir')
 
       expect(config.remove('four')).to.equal(undefined)
       expect(writeStub).to.have.been.calledOnceWith('fake/dir/.checrc', '{"one":1,"two":"2","three":true}')
