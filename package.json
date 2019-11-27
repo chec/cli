@@ -63,7 +63,12 @@
     "bin": "chec",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "hooks": {
+      "init": [
+        "./src/hooks/add-chec-logo"
+      ]
+    }
   },
   "repository": "chec/chec-cli",
   "scripts": {
