@@ -11,6 +11,7 @@ const spawner = require('../helpers/spawner')
 const Auth = require('../helpers/auth')
 const {makeConfig} = require('../helpers/config')
 const envWriter = require('../helpers/env-writer')
+const globalFlags = require('../helpers/global-flags')
 const streamWriter = require('../helpers/stream-writer')
 
 class DemoStoreCommand extends Command {
@@ -53,7 +54,11 @@ class DemoStoreCommand extends Command {
 
     // Display some sort of completion message and then run the example
     this.displayCompletion(data)
-    this.runExample(data)
+    try {
+      await this.runExample(data)
+    } catch (error) {
+      this.error(error.message)
+    }
   }
 
   /**
@@ -254,11 +259,7 @@ ${chalk.dim(manifest.description)}`)
   async runExample(manifest) {
     const {npm, buildScripts} = manifest
 
-    try {
-      await this.writeEnv(manifest)
-    } catch (error) {
-      return
-    }
+    await this.writeEnv(manifest)
 
     // Don't continue if there's no NPM configuration
     if (!npm) {
@@ -290,11 +291,18 @@ ${chalk.dim(manifest.description)}`)
     })
   }
 
+  /**
+   * Attempts to write an env file to the destination directory of the installed store, using "dotenv" configuration
+   * from the "manifest" and also `--env` flag configration
+   *
+   * @param {Object} manifest The store "manifest"
+   */
   async writeEnv(manifest) {
     const {flags: {env}} = this.parse(DemoStoreCommand)
 
-    let options = manifest.dotenv || {}
+    const options = manifest.dotenv ? manifest.dotenv : {}
 
+    // Check and parse the `--env` configuration
     if (Array.isArray(env)) {
       env.forEach(envDefinition => {
         const matches = envDefinition.match(/^([\w\d_]+)=(.+)$/i)
@@ -307,30 +315,70 @@ ${chalk.dim(manifest.description)}`)
       })
     }
 
-    // Check for "dotenv" settings and update/write a .env file
-    if (typeof manifest.dotenv === 'object') {
-      const env = await envWriter.create(`${this.getDestinationDirectory(manifest)}${sep}.env`)
-
-      Object.entries(manifest.dotenv).forEach(([key, value]) => {
-        // Check for an injection point of chec keys
-        const matches = typeof value === 'string' && value.match(/^%chec_([ps])key%$/)
-
-        if (!matches) {
-          env.set(key, value)
-          return
-        }
-
-        if (!Auth.isLoggedIn()) {
-          this.log(`${chalk.bgRed.white('Could not run the example store. You must be logged in')}
-
-This store requires a .env file with your Chec.io public key provided as "${key}"`)
-          throw new Error('Could not write .env')
-        }
-        env.set(key, Auth.getApiKey(true, matches[1] === 'p' ? 'public' : 'secret').key)
-      })
-
-      return env.writeFile()
+    if (Object.entries(options).length === 0) {
+      return
     }
+
+    // Check for "dotenv" settings and update/write a .env file
+    const writer = await envWriter.create(`${this.getDestinationDirectory(manifest)}${sep}.env`)
+    let failed = false
+
+    Object.entries(options).forEach(([key, value]) => {
+      try {
+        return writer.set(key, this.substituteEnvVars(value, key))
+      } catch (error) {
+        this.log(error.message)
+        failed = true
+      }
+    })
+
+    if (failed) {
+      throw new Error('Could not write the required .env file')
+    }
+
+    return writer.writeFile()
+  }
+
+  /**
+   * Takes a value (defined by "dotenv" configuration) and attempts to substitute known placeholders into their intended values
+   *
+   * @param {string} value The initial value set in the "dotenv" configuration
+   * @param {string} key The key of this value in the "dotenv" configuration
+   * @returns {string} The parsed value
+   */
+  substituteEnvVars(value, key) {
+    const {flags: {domain}} = this.parse(DemoStoreCommand)
+
+    const matchers = [
+      {
+        regex: /^%chec_([ps])key%$/,
+        getter: matches => {
+          if (!Auth.isLoggedIn()) {
+            throw new Error(`${chalk.red('Could not set keys in an env file as you are not logged in!')} This store requires a .env file with your Chec.io public key provided as "${key}"`)
+          }
+
+          return Auth.getApiKey(true, matches[1] === 'p' ? 'public' : 'secret').key
+        },
+      },
+      {
+        regex: /^%chec_api_url%$/,
+        getter: () => `api.${domain}`,
+      },
+    ]
+
+    return matchers.reduce((acc, {regex, getter}) => {
+      if (typeof acc !== 'string') {
+        return acc
+      }
+
+      const matches = acc.match(regex)
+
+      if (!matches) {
+        return acc
+      }
+
+      return getter(matches)
+    }, value)
   }
 
   /**
@@ -366,6 +414,7 @@ DemoStoreCommand.flags = {
     description: 'Optionally skip the login requirement. This is likely to be incompatible with example stores that are available for download',
     default: false,
   }),
+  ...globalFlags,
 }
 
 DemoStoreCommand.description = `Create a demo store using Chec.io and Commerce.js
