@@ -257,7 +257,7 @@ describe('demo-store', () => {
     expect(envMock.set).to.have.been.calledWith('string', 'content')
     expect(envMock.set).to.have.been.calledWith('key', 'public')
     expect(envMock.set).to.have.been.calledWith('secret', 'secret')
-    expect(envMock.set).to.have.been.calledWith('api_url', 'api.chec.example')
+    expect(envMock.set).to.have.been.calledWith('api_url', 'https://api.chec.example')
   })
 
   test
