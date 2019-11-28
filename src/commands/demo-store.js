@@ -255,11 +255,7 @@ ${chalk.dim(manifest.description)}`)
   async runExample(manifest) {
     const {npm, buildScripts} = manifest
 
-    try {
-      await this.writeEnv(manifest)
-    } catch (error) {
-      return
-    }
+    await this.writeEnv(manifest)
 
     // Don't continue if there's no NPM configuration
     if (!npm) {
@@ -291,11 +287,18 @@ ${chalk.dim(manifest.description)}`)
     })
   }
 
+  /**
+   * Attempts to write an env file to the destination directory of the installed store, using "dotenv" configuration
+   * from the "manifest" and also `--env` flag configration
+   *
+   * @param {Object} manifest The store "manifest"
+   */
   async writeEnv(manifest) {
     const {flags: {env}} = this.parse(DemoStoreCommand)
 
-    let options = manifest.dotenv || {}
+    const options = manifest.dotenv ? manifest.dotenv : {}
 
+    // Check and parse the `--env` configuration
     if (Array.isArray(env)) {
       env.forEach(envDefinition => {
         const matches = envDefinition.match(/^([\w\d_]+)=(.+)$/i)
@@ -308,22 +311,31 @@ ${chalk.dim(manifest.description)}`)
       })
     }
 
-    // Check for "dotenv" settings and update/write a .env file
-    if (typeof manifest.dotenv === 'object') {
-      const env = await envWriter.create(`${this.getDestinationDirectory(manifest)}${sep}.env`)
-
-      Object.entries(manifest.dotenv).forEach(([key, value]) => {
-        try {
-          return env.set(key, this.substituteEnvVars(value, key))
-        } catch (error) {
-          this.log(error.message)
-        }
-      })
-
-      return env.writeFile()
+    if (Object.entries(options).length === 0) {
+      return
     }
+
+    // Check for "dotenv" settings and update/write a .env file
+    const writer = await envWriter.create(`${this.getDestinationDirectory(manifest)}${sep}.env`)
+
+    Object.entries(options).forEach(([key, value]) => {
+      try {
+        return writer.set(key, this.substituteEnvVars(value, key))
+      } catch (error) {
+        this.log(error.message)
+      }
+    })
+
+    return writer.writeFile()
   }
 
+  /**
+   * Takes a value (defined by "dotenv" configuration) and attempts to substitute known placeholders into their intended values
+   *
+   * @param {string} value The initial value set in the "dotenv" configuration
+   * @param {string} key The key of this value in the "dotenv" configuration
+   * @returns {string} The parsed value
+   */
   substituteEnvVars(value, key) {
     const {flags: {domain}} = this.parse(DemoStoreCommand)
 
