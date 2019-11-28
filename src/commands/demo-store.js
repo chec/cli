@@ -11,6 +11,7 @@ const spawner = require('../helpers/spawner')
 const Auth = require('../helpers/auth')
 const {makeConfig} = require('../helpers/config')
 const envWriter = require('../helpers/env-writer')
+const globalFlags = require('../helpers/global-flags')
 const streamWriter = require('../helpers/stream-writer')
 
 class DemoStoreCommand extends Command {
@@ -312,25 +313,50 @@ ${chalk.dim(manifest.description)}`)
       const env = await envWriter.create(`${this.getDestinationDirectory(manifest)}${sep}.env`)
 
       Object.entries(manifest.dotenv).forEach(([key, value]) => {
-        // Check for an injection point of chec keys
-        const matches = typeof value === 'string' && value.match(/^%chec_([ps])key%$/)
-
-        if (!matches) {
-          env.set(key, value)
-          return
+        try {
+          return env.set(key, this.substituteEnvVars(value, key))
+        } catch (error) {
+          this.log(error.message)
         }
-
-        if (!Auth.isLoggedIn()) {
-          this.log(`${chalk.bgRed.white('Could not run the example store. You must be logged in')}
-
-This store requires a .env file with your Chec.io public key provided as "${key}"`)
-          throw new Error('Could not write .env')
-        }
-        env.set(key, Auth.getApiKey(true, matches[1] === 'p' ? 'public' : 'secret').key)
       })
 
       return env.writeFile()
     }
+  }
+
+  substituteEnvVars(value, key) {
+    const {flags: {domain}} = this.parse(DemoStoreCommand)
+
+    const matchers = [
+      {
+        regex: /^%chec_([ps])key%$/,
+        getter: matches => {
+          if (!Auth.isLoggedIn()) {
+            throw new Error(`${chalk.red('Could not set keys in an env file as you are not logged in!')} This store requires a .env file with your Chec.io public key provided as "${key}"`)
+          }
+
+          return Auth.getApiKey(true, matches[1] === 'p' ? 'public' : 'secret').key
+        },
+      },
+      {
+        regex: /^%chec_api_url%$/,
+        getter: () => `api.${domain}`,
+      },
+    ]
+
+    return matchers.reduce((acc, {regex, getter}) => {
+      if (typeof acc !== 'string') {
+        return acc
+      }
+
+      const matches = acc.match(regex)
+
+      if (!matches) {
+        return acc
+      }
+
+      return getter(matches)
+    }, value)
   }
 
   /**
@@ -366,6 +392,7 @@ DemoStoreCommand.flags = {
     description: 'Optionally skip the login requirement. This is likely to be incompatible with example stores that are available for download',
     default: false,
   }),
+  ...globalFlags,
 }
 
 DemoStoreCommand.description = `Create a demo store using Chec.io and Commerce.js

@@ -246,17 +246,18 @@ describe('demo-store', () => {
   .stub(Auth, 'isLoggedIn', () => true)
   .stub(Auth, 'getApiKey', sinon.stub().callsFake((_, type) => ({key: type})))
   .stdout()
-  .command(['demo-store', 'basic', '/given/directory'])
+  .command(['demo-store', 'basic', '/given/directory', '--domain', 'chec.example'])
   .it('Will write env variables if configured', function () {
     this.slow(600)
 
     expect(envWriter.create).to.have.been.calledOnceWith('/given/directory/.env')
-    expect(envMock.set).to.have.callCount(4)
+    expect(envMock.set).to.have.callCount(5)
 
     expect(envMock.set).to.have.been.calledWith('test', 123)
     expect(envMock.set).to.have.been.calledWith('string', 'content')
     expect(envMock.set).to.have.been.calledWith('key', 'public')
     expect(envMock.set).to.have.been.calledWith('secret', 'secret')
+    expect(envMock.set).to.have.been.calledWith('api_url', 'api.chec.example')
   })
 
   test
@@ -275,7 +276,7 @@ describe('demo-store', () => {
     this.slow(600)
 
     expect(ctx.stdout).to.contain('Downloaded basic to /given/directory')
-    expect(ctx.stdout).to.contain('Could not run the example store. You must be logged in')
+    expect(ctx.stdout).to.contain('Could not set keys in an env file as you are not logged in!')
     expect(ctx.stdout).to.contain('This store requires a .env file with your Chec.io public key provided as "key"')
   })
 
