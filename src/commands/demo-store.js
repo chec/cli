@@ -54,7 +54,11 @@ class DemoStoreCommand extends Command {
 
     // Display some sort of completion message and then run the example
     this.displayCompletion(data)
-    this.runExample(data)
+    try {
+      await this.runExample(data)
+    } catch (error) {
+      this.error(error.message)
+    }
   }
 
   /**
@@ -317,14 +321,20 @@ ${chalk.dim(manifest.description)}`)
 
     // Check for "dotenv" settings and update/write a .env file
     const writer = await envWriter.create(`${this.getDestinationDirectory(manifest)}${sep}.env`)
+    let failed = false
 
     Object.entries(options).forEach(([key, value]) => {
       try {
         return writer.set(key, this.substituteEnvVars(value, key))
       } catch (error) {
         this.log(error.message)
+        failed = true
       }
     })
+
+    if (failed) {
+      throw new Error('Could not write the required .env file')
+    }
 
     return writer.writeFile()
   }

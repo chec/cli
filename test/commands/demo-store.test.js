@@ -272,6 +272,9 @@ describe('demo-store', () => {
   .stub(Auth, 'isLoggedIn', () => false)
   .stdout()
   .command(['demo-store', 'basic', '/given/directory', '--no-login'])
+  .catch(error => {
+    expect(stripAnsi(error.message)).to.contain('Could not write the required .env file')
+  })
   .it('Will indicate if API keys cannot be written without being logged in when ignoring login requirement', function (ctx) {
     this.slow(600)
 
@@ -295,6 +298,9 @@ describe('demo-store', () => {
   mockZipStream(mockEnv(base), 'env-project', 'fake')
   .stdout()
   .command(['demo-store', 'basic', '/given/directory', '--env', 'test'])
+  .catch(error => {
+    expect(stripAnsi(error.message)).to.contain('Could not write the required .env file')
+  })
   .it('Validates env settings given as flags', function (ctx) {
     this.slow(600)
 
