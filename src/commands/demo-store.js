@@ -362,7 +362,7 @@ ${chalk.dim(manifest.description)}`)
       },
       {
         regex: /^%chec_api_url%$/,
-        getter: () => `api.${domain}`,
+        getter: () => domain === 'chec.local' ? `http://api.${domain}` : `https://api.${domain}`,
       },
     ]
 
