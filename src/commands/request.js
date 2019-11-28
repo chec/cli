@@ -3,7 +3,9 @@ const {flags} = require('@oclif/command')
 const globalFlags = require('../helpers/global-flags')
 const jsonHelper = require('../helpers/json')
 const requestHelper = require('../helpers/request')
+const fs = require('fs')
 const ora = require('ora')
+const chalk = require('chalk')
 
 /**
  * Runs an arbitrary HTTP request against the Chec API
@@ -19,13 +21,20 @@ class RequestCommand extends Command {
       stream: process.stdout,
     }).start()
 
-    const {args, flags: {domain, sandbox}} = this.parse(RequestCommand)
+    const {args, flags: {domain, sandbox, file}} = this.parse(RequestCommand)
 
     let parsedPayload
     try {
-      parsedPayload = args.payload ? JSON.parse(args.payload) : null
+      if (args.payload) {
+        parsedPayload = JSON.parse(args.payload)
+      } else if (file) {
+        parsedPayload = JSON.parse(fs.readFileSync(file))
+      }
     } catch (error) {
       spinner.fail('Failed to parse your input payload. Please provide valid JSON.')
+      if (file && !fs.existsSync(file)) {
+        this.error(`Input file ${chalk.yellow(file)} could not be opened`)
+      }
       return
     }
 
@@ -75,6 +84,10 @@ RequestCommand.flags = {
     description: 'Use sandbox API keys',
     default: false,
   }),
+  file: flags.string({
+    description: 'Optional: path to JSON encoded file containing request payload',
+    default: null,
+  }),
 }
 
 RequestCommand.examples = [
@@ -82,6 +95,7 @@ RequestCommand.examples = [
   '$ chec request GET /v1/orders',
   '$ chec request GET /v1/products \'{"limit":1}\'',
   '$ chec request GET /v1/products \'{"limit":1}\' --sandbox',
+  '$ chec request POST /v1/assets --file=my-asset-payload.json',
 ]
 
 module.exports = RequestCommand
