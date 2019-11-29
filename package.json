@@ -1,11 +1,11 @@
 {
-  "name": "chec-cli",
+  "name": "@chec/cli",
   "version": "0.0.0",
   "author": "Chec Platform",
   "bin": {
     "chec": "./bin/run"
   },
-  "bugs": "https://github.com/chec/chec-cli/issues",
+  "bugs": "https://github.com/chec/cli/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -52,7 +52,7 @@
     "/oclif.manifest.json",
     "/src"
   ],
-  "homepage": "https://github.com/chec/chec-cli",
+  "homepage": "https://github.com/chec/cli",
   "keywords": [
     "oclif"
   ],
@@ -70,7 +70,7 @@
       ]
     }
   },
-  "repository": "chec/chec-cli",
+  "repository": "chec/cli",
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint .",
