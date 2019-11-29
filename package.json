@@ -1,6 +1,7 @@
 {
   "name": "@chec/cli",
-  "version": "0.0.0",
+  "description": "A command line interface for using the Chec API",
+  "version": "1.0.0-beta1",
   "author": "Chec Platform",
   "bin": {
     "chec": "./bin/run"
@@ -54,7 +55,10 @@
   ],
   "homepage": "https://github.com/chec/cli",
   "keywords": [
-    "oclif"
+    "chec",
+    "chec.io",
+    "commercejs",
+    "commerce.js"
   ],
   "license": "BSD-3-Clause",
   "main": "src/index.js",

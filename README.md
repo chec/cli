@@ -15,11 +15,11 @@ chec-cli
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g chec-cli
+$ npm install -g @chec/cli
 $ chec COMMAND
 running command...
 $ chec (-v|--version|version)
-chec-cli/0.0.0 darwin-x64 node-v13.0.1
+@chec/cli/1.0.0-beta1 darwin-x64 node-v10.16.3
 $ chec --help [COMMAND]
 USAGE
   $ chec COMMAND
@@ -36,6 +36,7 @@ USAGE
 * [`chec logs`](#chec-logs)
 * [`chec register`](#chec-register)
 * [`chec request METHOD RESOURCE [PAYLOAD]`](#chec-request-method-resource-payload)
+* [`chec whoami`](#chec-whoami)
 
 ## `chec demo-store [STORE] [TARGETDIRECTORY]`
 
@@ -50,14 +51,17 @@ ARGUMENTS
   TARGETDIRECTORY  The destination directory name to download the example to. The defaults to the store name
 
 OPTIONS
-  --env=env  Extra env variables to set for a .env file in the installed project
+  --env=env   Extra env variables to set for a .env file in the installed project
+
+  --no-login  Optionally skip the login requirement. This is likely to be incompatible with example stores that are
+              available for download
 
 DESCRIPTION
   This command will download an example project from GitHub and initialise it on your machine. You will be free to edit 
   the downloaded code and play around with Commerce.js in client code
 ```
 
-_See code: [src/commands/demo-store.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/demo-store.js)_
+_See code: [src/commands/demo-store.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/demo-store.js)_
 
 ## `chec help [COMMAND]`
 
@@ -95,7 +99,7 @@ DESCRIPTION
   Communicates with Chec.io to get full log information for the given log ID
 ```
 
-_See code: [src/commands/log.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/log.js)_
+_See code: [src/commands/log.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/log.js)_
 
 ## `chec login`
 
@@ -114,7 +118,7 @@ DESCRIPTION
   Log into your Chec.io account to enable commands that require API access.
 ```
 
-_See code: [src/commands/login.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/login.js)_
+_See code: [src/commands/login.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/login.js)_
 
 ## `chec logout`
 
@@ -128,7 +132,7 @@ DESCRIPTION
   Log out of your account and remove the local copy of your API keys.
 ```
 
-_See code: [src/commands/logout.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/logout.js)_
+_See code: [src/commands/logout.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/logout.js)_
 
 ## `chec logs`
 
@@ -150,7 +154,7 @@ DESCRIPTION
   from Chec.io.
 ```
 
-_See code: [src/commands/logs.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/logs.js)_
+_See code: [src/commands/logs.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/logs.js)_
 
 ## `chec register`
 
@@ -160,15 +164,11 @@ Register an account with Chec.io
 USAGE
   $ chec register
 
-OPTIONS
-  -e, --email=email        Your accounts email address
-  -p, --password=password  The password to login with
-
 DESCRIPTION
-  Create an account with Chec.io where you can manage products and pricing that is available through the Chec API
+  Sign up for a Chec account through your browser
 ```
 
-_See code: [src/commands/register.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/register.js)_
+_See code: [src/commands/register.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/register.js)_
 
 ## `chec request METHOD RESOURCE [PAYLOAD]`
 
@@ -179,20 +179,44 @@ USAGE
   $ chec request METHOD RESOURCE [PAYLOAD]
 
 ARGUMENTS
-  METHOD    (GET|POST|PUT|DELETE) HTTP method
+  METHOD    (GET|POST|PUT|PATCH|DELETE) HTTP method
   RESOURCE  API resource (e.g. /v1/products)
   PAYLOAD   Request payload (JSON encoded)
+
+OPTIONS
+  --file=file  Optional: path to JSON encoded file containing request payload
+  --sandbox    Use sandbox API keys
 
 DESCRIPTION
   Runs an arbitrary API request given the HTTP method, endpoint, and input payload.
 
-  Data should be provided as a JSON object.
+  Data should be provided as a JSON object. You may also use `--sandbox` to use
+  sandbox API keys.
 
 EXAMPLES
   $ chec request GET /v1/products
   $ chec request GET /v1/orders
   $ chec request GET /v1/products '{"limit":1}'
+  $ chec request GET /v1/products '{"limit":1}' --sandbox
+  $ chec request POST /v1/assets --file=my-asset-payload.json
 ```
 
-_See code: [src/commands/request.js](https://github.com/chec/chec-cli/blob/v0.0.0/src/commands/request.js)_
+_See code: [src/commands/request.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/request.js)_
+
+## `chec whoami`
+
+Get information on your user account
+
+```
+USAGE
+  $ chec whoami
+
+DESCRIPTION
+  Fetches information on your user account, and merchants associated with your account.
+
+EXAMPLE
+  $ chec whoami
+```
+
+_See code: [src/commands/whoami.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/whoami.js)_
 <!-- commandsstop -->
