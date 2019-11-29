@@ -1,12 +1,11 @@
-chec-cli
+Chec CLI
 ========
 
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![CircleCI](https://circleci.com/gh/chec/cli/tree/master.svg?style=shield)](https://circleci.com/gh/chec/cli/tree/master)
-[![Codecov](https://codecov.io/gh/chec/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/chec/chec-cli)
-[![License](https://img.shields.io/github/license/chec/cli.svg)](https://github.com/chec/chec-cli/blob/master/LICENSE.md)
-<!-- [![Version](https://img.shields.io/npm/v/chec-cli.svg)](https://npmjs.org/package/chec-cli) -->
-<!-- [![Downloads/week](https://img.shields.io/npm/dw/chec-cli.svg)](https://npmjs.org/package/chec-cli) -->
+[![Codecov](https://codecov.io/gh/chec/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/chec/cli)
+[![License](https://img.shields.io/github/license/chec/cli.svg)](https://github.com/chec/cli/blob/master/LICENSE.md)
+[![Version](https://img.shields.io/npm/v/@chec/cli.svg)](https://npmjs.org/package/@chec/cli)
+[![Downloads/week](https://img.shields.io/npm/dw/@chec/cli.svg)](https://npmjs.org/package/@chec/cli)
 
 <!-- toc -->
 * [Usage](#usage)
