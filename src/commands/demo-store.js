@@ -286,9 +286,10 @@ ${chalk.dim(manifest.description)}`)
     .run()
 
     // Loop through additional scripts and await their execution
-    buildScripts.forEach(async script => {
+    for (const script of buildScripts) {
+      // eslint-disable-next-line no-await-in-loop
       await spawner.create(command, [...baseArgs, 'run', script], {stdio: 'inherit'}).run()
-    })
+    }
   }
 
   /**
