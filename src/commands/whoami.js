@@ -1,8 +1,10 @@
 const Command = require('../base')
 const globalFlags = require('../helpers/global-flags')
+const authHelper = require('../helpers/auth')
 const requestHelper = require('../helpers/request')
 const ora = require('ora')
 const chalk = require('chalk')
+const {cli} = require('cli-ux')
 
 /**
  * Tells you who you're logged in as
@@ -18,15 +20,28 @@ class WhoamiCommand extends Command {
       stream: process.stdout,
     }).start()
 
-    const {flags: {domain}} = this.parse(WhoamiCommand)
+    const {flags} = this.parse(WhoamiCommand)
 
     try {
       const result = await requestHelper.request('GET',
-        '/v1/developer/user', {}, {domain})
+        '/v1/developer/user', {}, {domain: flags.domain})
       spinner.stop()
 
+      // Show email address and merchant name
       const data = JSON.parse(result.body)
       this.log(`${chalk.green.bold(data.email)}: ${data.merchants.map(merchant => merchant.business_name).join(', ')}`)
+
+      // Show API keys
+      this.log()
+
+      cli.table(authHelper.getApiKeys(), {
+        key: {},
+        type: {},
+        is_sandbox: {}, // eslint-disable-line camelcase
+      }, {
+        printLine: this.log,
+        ...flags,
+      })
     } catch (error) {
       spinner.fail('Request failed! ' + error.statusCode + ' ' + error.statusMessage)
     }
@@ -41,6 +56,7 @@ WhoamiCommand.args = []
 
 WhoamiCommand.flags = {
   ...globalFlags,
+  ...cli.table.flags,
 }
 
 WhoamiCommand.examples = [
