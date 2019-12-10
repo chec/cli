@@ -1,7 +1,7 @@
 {
   "name": "@chec/cli",
   "description": "A command line interface for using the Chec API",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0-beta2",
   "author": "Chec Platform",
   "bin": {
     "chec": "./bin/run"
