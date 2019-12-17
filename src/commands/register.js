@@ -52,7 +52,7 @@ class RegisterCommand extends Command {
   }
 }
 
-RegisterCommand.description = `Register an account with Chec.io
+RegisterCommand.description = `Register an account with Chec
 Sign up for a Chec account through your browser
 `
 

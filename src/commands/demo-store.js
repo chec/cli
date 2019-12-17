@@ -355,7 +355,7 @@ ${chalk.dim(manifest.description)}`)
         regex: /^%chec_([ps])key%$/,
         getter: matches => {
           if (!Auth.isLoggedIn()) {
-            throw new Error(`${chalk.red('Could not set keys in an env file as you are not logged in!')} This store requires a .env file with your Chec.io public key provided as "${key}"`)
+            throw new Error(`${chalk.red('Could not set keys in an env file as you are not logged in!')} This store requires a .env file with your Chec public key provided as "${key}"`)
           }
 
           return Auth.getApiKey(true, matches[1] === 'p' ? 'public' : 'secret').key
@@ -418,7 +418,7 @@ DemoStoreCommand.flags = {
   ...globalFlags,
 }
 
-DemoStoreCommand.description = `Create a demo store using Chec.io and Commerce.js
+DemoStoreCommand.description = `Create a demo store using Chec and Commerce.js
 This command will download an example project from GitHub and initialise it on your machine. You will be free to edit the downloaded code and play around with Commerce.js in client code
 `
 module.exports = DemoStoreCommand

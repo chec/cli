@@ -44,7 +44,7 @@ class LoginCommand extends Command {
     const {email, password} = await questionHelper.ask([emailArg, passwordArg], input)
 
     const spinner = ora({
-      text: 'Logging into Chec.io...',
+      text: 'Logging into Chec...',
       stream: process.stdout,
     }).start()
 
@@ -66,8 +66,8 @@ class LoginCommand extends Command {
   }
 }
 
-LoginCommand.description = `Log into your Chec.io account
-Log into your Chec.io account to enable commands that require API access.
+LoginCommand.description = `Log into your Chec account
+Log into your Chec account to enable commands that require API access.
 `
 
 LoginCommand.flags = {
