@@ -27,7 +27,7 @@ class LogsCommand extends Command {
 
     // Handle a request to start with a given number of logs
     if (tail > 0) {
-      this.spinner('Fetching logs from Chec.io...')
+      this.spinner('Fetching logs from Chec...')
       try {
         this.logs = await requestHelper.request(
           'GET',
@@ -36,7 +36,7 @@ class LogsCommand extends Command {
           {domain}
         ).then(response => JSON.parse(response.body).map(entry => new LogEntry(entry, domain)))
       } catch (error) {
-        this.spinnerInstance.fail(`Failed to fetch initial logs from Chec.io. (${error.response.statusCode})`)
+        this.spinnerInstance.fail(`Failed to fetch initial logs from Chec. (${error.response.statusCode})`)
         return
       }
 
@@ -79,7 +79,7 @@ class LogsCommand extends Command {
     this.canLog = true
 
     const navigationPrompt = 'Press "up" to navigate through the exisiting logs'
-    this.spinner(`Listening for logs from Chec.io. ${this.logs.length > 0 ? navigationPrompt : ''}`)
+    this.spinner(`Listening for logs from Chec. ${this.logs.length > 0 ? navigationPrompt : ''}`)
 
     // Wait for the user to navigation logs
     if (!await this.handleNavigation()) {
@@ -116,7 +116,7 @@ class LogsCommand extends Command {
         entry.setPrinted()
 
         // Restart the spinner
-        this.spinner('Listening for logs from Chec.io. Press "up" to navigate through the exisiting logs')
+        this.spinner('Listening for logs from Chec. Press "up" to navigate through the exisiting logs')
 
         // Keep logs pruned
         this.pruneLogs()
@@ -194,11 +194,11 @@ class LogsCommand extends Command {
     }
 
     // Fetch the individual log entry
-    this.spinner('Fetching log from Chec.io...')
+    this.spinner('Fetching log from Chec...')
     try {
       await log.getFullLog()
     } catch (error) {
-      throw new Error(`Failed to fetch full log detail from Chec.io. (${error.response.statusCode})`)
+      throw new Error(`Failed to fetch full log detail from Chec. (${error.response.statusCode})`)
     }
     this.spinner(null)
 
@@ -370,7 +370,7 @@ LogsCommand.flags = {
     char: 'f',
     default: true,
     allowNo: true,
-    description: '"Follow" logs from Chec.io. New events that happen are shown live',
+    description: '"Follow" logs from Chec. New events that happen are shown live',
   }),
   history: flags.integer({
     char: 'h',
@@ -384,8 +384,8 @@ LogsCommand.flags = {
   ...globalFlags,
 }
 
-LogsCommand.description = `Show a summary of your API requests processed by Chec.io
-Listens for logs from Chec.io and displays a summary of them to you as they are processed by Chec.
-You may optionally retrieve prior logs and navigate through shown logs to fetch further details about the log entry from Chec.io.
+LogsCommand.description = `Show a summary of your API requests processed by Chec.
+Listens for logs from Chec and displays a summary of them to you as they are processed by Chec.
+You may optionally retrieve prior logs and navigate through shown logs to fetch further details about the log entry from Chec.
 `
 module.exports = LogsCommand

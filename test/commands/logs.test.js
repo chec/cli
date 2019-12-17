@@ -110,7 +110,7 @@ describe('logs', () => {
   .quitsAfter(10) // For some reason the first one's a bit dicier
   .command('logs')
   .it('should indicate that it\'s waiting for logs', ctx => {
-    expect(ctx.stdout).to.contain('Listening for logs from Chec.io.')
+    expect(ctx.stdout).to.contain('Listening for logs from Chec.')
   })
 
   base
@@ -145,7 +145,7 @@ describe('logs', () => {
   .stdout()
   .quitsAfter(10)
   .command(['logs', '-n5'])
-  .it('Will send a request to get logs from Chec.io', ctx => {
+  .it('Will send a request to get logs from Chec', ctx => {
     expect(requestHelper.request).to.have.been.calledOnceWith(
       'GET',
       '/v1/developer/logs',
@@ -354,7 +354,7 @@ describe('logs', () => {
   .it('Should return to streaming logs after choosing an item and pressing enter', ctx => {
     const [, sincePrompt] = ctx.stdout.split('Press "enter" to return to streaming logs or "c" to copy to clipboard', 2)
     expect(sincePrompt).to.contain(stripAnsi(fakeLogEntry.formattedSummary()))
-    expect(sincePrompt).to.contain('Listening for logs from Chec.io.')
+    expect(sincePrompt).to.contain('Listening for logs from Chec.')
   })
 
   // Error handling
@@ -364,7 +364,7 @@ describe('logs', () => {
   .quitsAfter(10)
   .command(['logs', '-n5'])
   .it('Will gracefully show errors when fetching a tail', ctx => {
-    expect(ctx.stdout).to.contain('Failed to fetch initial logs from Chec.io. (401)')
+    expect(ctx.stdout).to.contain('Failed to fetch initial logs from Chec. (401)')
   })
 
   // The following test is working but seems to hang the console after it runs. Not sure why yet...
@@ -379,6 +379,6 @@ describe('logs', () => {
   .pressesAfter(25, 'up')
   .command('logs')
   .skip('Will gracefully show errors when fetching a full log', ctx => {
-    expect(ctx.stdout).to.contain('Failed to fetch full log detail from Chec.io. (401)')
+    expect(ctx.stdout).to.contain('Failed to fetch full log detail from Chec. (401)')
   })
 })

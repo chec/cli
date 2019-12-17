@@ -280,7 +280,7 @@ describe('demo-store', () => {
 
     expect(ctx.stdout).to.contain('Downloaded basic to /given/directory')
     expect(ctx.stdout).to.contain('Could not set keys in an env file as you are not logged in!')
-    expect(ctx.stdout).to.contain('This store requires a .env file with your Chec.io public key provided as "key"')
+    expect(ctx.stdout).to.contain('This store requires a .env file with your Chec public key provided as "key"')
   })
 
   mockZipStream(mockEnv(base), 'env-project', 'fake')

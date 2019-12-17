@@ -39,7 +39,7 @@ USAGE
 
 ## `chec demo-store [STORE] [TARGETDIRECTORY]`
 
-Create a demo store using Chec.io and Commerce.js
+Create a demo store using Chec and Commerce.js
 
 ```
 USAGE
@@ -95,14 +95,14 @@ OPTIONS
   --utc  Display timestamps in UTC timezone instead of the local timezone
 
 DESCRIPTION
-  Communicates with Chec.io to get full log information for the given log ID
+  Communicates with  to get full log information for the given log ID
 ```
 
 _See code: [src/commands/log.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/log.js)_
 
 ## `chec login`
 
-Log into your Chec.io account
+Log into your Chec account
 
 ```
 USAGE
@@ -114,7 +114,7 @@ OPTIONS
   --skip-check             Indicate that this command should skip checking if a user is already logged in
 
 DESCRIPTION
-  Log into your Chec.io account to enable commands that require API access.
+  Log into your Chec account to enable commands that require API access.
 ```
 
 _See code: [src/commands/login.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/login.js)_
@@ -135,29 +135,29 @@ _See code: [src/commands/logout.js](https://github.com/chec/cli/blob/v1.0.0-beta
 
 ## `chec logs`
 
-Show a summary of your API requests processed by Chec.io
+Show a summary of your API requests processed by Chec
 
 ```
 USAGE
   $ chec logs
 
 OPTIONS
-  -f, --[no-]follow      "Follow" logs from Chec.io. New events that happen are shown live
+  -f, --[no-]follow      "Follow" logs from Chec. New events that happen are shown live
   -h, --history=history  [default: 100] Keep record of the given number of logs when browsing back.
   -n, --tail=tail        Show the last n number of logs before listening for new logs
   --utc                  Display timestamps in UTC timezone
 
 DESCRIPTION
-  Listens for logs from Chec.io and displays a summary of them to you as they are processed by Chec.
+  Listens for logs from Chec and displays a summary of them to you as they are processed by Chec.
   You may optionally retrieve prior logs and navigate through shown logs to fetch further details about the log entry 
-  from Chec.io.
+  from Chec.
 ```
 
 _See code: [src/commands/logs.js](https://github.com/chec/cli/blob/v1.0.0-beta1/src/commands/logs.js)_
 
 ## `chec register`
 
-Register an account with Chec.io
+Register an account with Chec
 
 ```
 USAGE

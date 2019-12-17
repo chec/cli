@@ -14,7 +14,7 @@ class LogCommand extends Command {
     const {args: {logId}, flags: {domain, raw, utc}} = this.parse(LogCommand)
     const log = new LogEntry({log_id: logId}, domain) // eslint-disable-line camelcase
     const spinner = ora({
-      text: 'Fetching log from Chec.io...',
+      text: 'Fetching log from Chec...',
       stream: process.stdout,
     }).start()
 
@@ -58,7 +58,7 @@ LogCommand.flags = {
 }
 
 LogCommand.description = `Get full detail about a given log ID
-Communicates with Chec.io to get full log information for the given log ID
+Communicates with Chec to get full log information for the given log ID
 `
 
 module.exports = LogCommand

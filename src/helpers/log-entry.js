@@ -4,11 +4,11 @@ const dateFormat = require('date-format')
 const colorise = require('json-colorizer')
 
 /**
- * A "model" that represents a log entry provided by Chec.io
+ * A "model" that represents a log entry provided by Chec
  */
 module.exports = class LogEntry {
   /**
-   * @param {object} rawEntry The entry provided by Chec.io
+   * @param {object} rawEntry The entry provided by Chec
    * @param {string} domain The domain that issued this log, for fetching further information about the log
    */
   constructor(rawEntry, domain = 'chec.io') {
