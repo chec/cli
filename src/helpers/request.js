@@ -23,6 +23,7 @@ module.exports = {
       domain: 'chec.io',
       ...extraOptions,
       headers: {
+        'User-Agent': 'chec/cli',
         'content-type': 'application/json',
         'x-authorization': key || null,
         ...extraOptions.headers || {},
