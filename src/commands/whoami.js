@@ -44,6 +44,9 @@ class WhoamiCommand extends Command {
       })
     } catch (error) {
       spinner.fail('Request failed! ' + error.statusCode + ' ' + error.statusMessage)
+      if (error.statusCode == 403) {
+        this.log(`${chalk.red.bold('Authentication Error')}: Log out and try again`)
+      }
     }
   }
 }

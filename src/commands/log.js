@@ -22,6 +22,9 @@ class LogCommand extends Command {
       await log.getFullLog()
     } catch (error) {
       spinner.fail(`Could not fetch the log "${logId}". Error: ${error.statusCode}`)
+      if (error.statusCode == 403) {
+        this.log(`${chalk.red.bold('Authentication Error')}: Log out and try again`)
+      }
       return
     }
 

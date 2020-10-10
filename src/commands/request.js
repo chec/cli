@@ -47,6 +47,9 @@ class RequestCommand extends Command {
       this.log(jsonHelper.prettify(result.body))
     } catch (error) {
       spinner.fail('Request failed: ' + error.statusCode + ' ' + error.statusMessage)
+      if (error.statusCode == 403) {
+        this.log(`${chalk.red.bold('Authentication Error')}: Log out and try again`)
+      }
       this.error(jsonHelper.prettify(error.body))
     }
   }

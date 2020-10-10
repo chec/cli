@@ -37,6 +37,9 @@ class LogsCommand extends Command {
         ).then(response => JSON.parse(response.body).map(entry => new LogEntry(entry, domain)))
       } catch (error) {
         this.spinnerInstance.fail(`Failed to fetch initial logs from Chec. (${error.response.statusCode})`)
+        if (error.response.statusCode == 403) {
+          this.log(`${chalk.red.bold('Authentication Error')}: Log out and try again`)
+        }
         return
       }
 
