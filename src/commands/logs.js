@@ -36,7 +36,10 @@ class LogsCommand extends Command {
           {domain}
         ).then(response => JSON.parse(response.body).map(entry => new LogEntry(entry, domain)))
       } catch (error) {
-        this.spinnerInstance.fail(`Failed to fetch initial logs from Chec. (${error.response.statusCode})`)
+        const errorMessage = error.response.statusCode === 403 ?
+          'Authentication error, try logging out and back in again.' :
+          `Failed to fetch initial logs from Chec. (${error.response.statusCode})`
+        this.spinnerInstance.fail(errorMessage)
         return
       }
 
