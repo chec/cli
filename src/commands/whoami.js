@@ -43,9 +43,9 @@ class WhoamiCommand extends Command {
         ...flags,
       })
     } catch (error) {
-      const errorMessage = error.statusCode === 403
-        ? 'Authentication error, try logging out and back in again.'
-        : `Request failed: ${error.statusCode} ${error.statusMessage}`
+      const errorMessage = error.statusCode === 403 ?
+        'Authentication error, try logging out and back in again.' :
+        `Request failed: ${error.statusCode} ${error.statusMessage}`
       spinner.fail(errorMessage)
     }
   }
