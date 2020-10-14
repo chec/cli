@@ -43,10 +43,10 @@ class WhoamiCommand extends Command {
         ...flags,
       })
     } catch (error) {
-      spinner.fail('Request failed! ' + error.statusCode + ' ' + error.statusMessage)
-      if (error.statusCode == 403) {
-        this.log(`${chalk.red.bold('Authentication Error')}: Log out and try again`)
-      }
+      const errorMessage = error.statusCode === 403
+        ? 'Authentication error, try logging out and back in again.'
+        : `Request failed: ${error.statusCode} ${error.statusMessage}`
+      spinner.fail(errorMessage)
     }
   }
 }

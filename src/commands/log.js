@@ -21,10 +21,10 @@ class LogCommand extends Command {
     try {
       await log.getFullLog()
     } catch (error) {
-      spinner.fail(`Could not fetch the log "${logId}". Error: ${error.statusCode}`)
-      if (error.statusCode == 403) {
-        this.log(`${chalk.red.bold('Authentication Error')}: Log out and try again`)
-      }
+      const errorMessage = error.statusCode === 403
+        ? 'Authentication error, try logging out and back in again.'
+        : `Could not fetch the log "${logId}". Error: ${error.statusCode}`
+      spinner.fail(errorMessage)
       return
     }
 
