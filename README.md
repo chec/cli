@@ -55,6 +55,8 @@ OPTIONS
   --no-login  Optionally skip the login requirement. This is likely to be incompatible with example stores that are
               available for download
 
+  --no-seed   Optionally skip seeding sample data into your Chec account
+
 DESCRIPTION
   This command will download an example project from GitHub and initialise it on your machine. You will be free to edit 
   the downloaded code and play around with Commerce.js in client code
