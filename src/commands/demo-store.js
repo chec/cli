@@ -287,19 +287,8 @@ ${chalk.dim(manifest.description)}`)
 
     // Handle opting out of seeding
     let {flags: {'no-seed': noSeed}} = this.parse(DemoStoreCommand)
-    if (!noSeed) {
-      const {seed} = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'seed',
-        message: 'Do you want to seed sample data into your Chec account?',
-        default: true,
-      }])
-
-      noSeed = !seed
-    }
-
     if (noSeed) {
-      this.log(chalk.yellow('Skipping seeding sample data...'))
+      this.log(chalk.yellow('Skipping seeding sample data.'))
       const seedIndex = buildScripts.indexOf('seed')
       if (seedIndex > -1) {
         buildScripts.splice(seedIndex, 1)
