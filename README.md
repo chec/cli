@@ -1,11 +1,15 @@
-Chec CLI
-========
+# Chec CLI
 
-[![CircleCI](https://circleci.com/gh/chec/cli/tree/master.svg?style=shield)](https://circleci.com/gh/chec/cli/tree/master)
-[![Codecov](https://codecov.io/gh/chec/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/chec/cli)
-[![License](https://img.shields.io/github/license/chec/cli.svg)](https://github.com/chec/cli/blob/master/LICENSE.md)
-[![Version](https://img.shields.io/npm/v/@chec/cli.svg)](https://npmjs.org/package/@chec/cli)
-[![Downloads/week](https://img.shields.io/npm/dw/@chec/cli.svg)](https://npmjs.org/package/@chec/cli)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/chec/commercejs-examples/master/assets/logo.svg" width="500" height="100" />
+</p>
+<p align="center">
+  <a href="https://circleci.com/gh/chec/cli/tree/master" rel="nofollow"><img alt="CircleCI" src="https://circleci.com/gh/chec/cli/tree/master.svg?style=shield"></a>
+  <a href="https://codecov.io/gh/chec/cli" rel="nofollow"><img alt="Codecov" src="https://codecov.io/gh/chec/cli/branch/master/graph/badge.svg"></a>
+  <a href="https://github.com/chec/cli/blob/master/LICENSE.md"><img alt="License" src="https://img.shields.io/github/license/chec/cli.svg"></a>
+  <a href="https://npmjs.org/package/@chec/cli" rel="nofollow"><img alt="Version" src="https://img.shields.io/npm/v/@chec/cli.svg"></a>
+  <a href="https://npmjs.org/package/@chec/cli" rel="nofollow"><img alt="Downloads/week" src="https://img.shields.io/npm/dw/@chec/cli.svg"></a>
+</p>
 
 <!-- toc -->
 * [Usage](#usage)
