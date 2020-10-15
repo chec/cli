@@ -37,7 +37,7 @@ USAGE
 * [`chec request METHOD RESOURCE [PAYLOAD]`](#chec-request-method-resource-payload)
 * [`chec whoami`](#chec-whoami)
 
-## `chec demo-store [STORE] [TARGETDIRECTORY]`
+## `Chec demo-store [STORE] [TARGETDIRECTORY]`
 
 Create a demo store using Chec and Commerce.js
 
@@ -62,9 +62,9 @@ DESCRIPTION
 
 _See code: [src/commands/demo-store.js](https://github.com/chec/cli/blob/1.0.0/src/commands/demo-store.js)_
 
-## `chec help [COMMAND]`
+## `Chec help [COMMAND]`
 
-display help for chec
+Display help for chec
 
 ```
 USAGE
@@ -219,3 +219,5 @@ EXAMPLE
 
 _See code: [src/commands/whoami.js](https://github.com/chec/cli/blob/1.0.0/src/commands/whoami.js)_
 <!-- commandsstop -->
+
+Thank You and Have A Nice Day!
