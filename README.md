@@ -18,7 +18,7 @@ $ npm install -g @chec/cli
 $ chec COMMAND
 running command...
 $ chec (-v|--version|version)
-@chec/cli/1.0.0 darwin-x64 node-v10.16.3
+@chec/cli/1.1.0 darwin-x64 node-v12.10.0
 $ chec --help [COMMAND]
 USAGE
   $ chec COMMAND
@@ -62,7 +62,7 @@ DESCRIPTION
   the downloaded code and play around with Commerce.js in client code
 ```
 
-_See code: [src/commands/demo-store.js](https://github.com/chec/cli/blob/1.0.0/src/commands/demo-store.js)_
+_See code: [src/commands/demo-store.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/demo-store.js)_
 
 ## `chec help [COMMAND]`
 
@@ -100,7 +100,7 @@ DESCRIPTION
   Communicates with Chec to get full log information for the given log ID
 ```
 
-_See code: [src/commands/log.js](https://github.com/chec/cli/blob/1.0.0/src/commands/log.js)_
+_See code: [src/commands/log.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/log.js)_
 
 ## `chec login`
 
@@ -119,7 +119,7 @@ DESCRIPTION
   Log into your Chec account to enable commands that require API access.
 ```
 
-_See code: [src/commands/login.js](https://github.com/chec/cli/blob/1.0.0/src/commands/login.js)_
+_See code: [src/commands/login.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/login.js)_
 
 ## `chec logout`
 
@@ -133,7 +133,7 @@ DESCRIPTION
   Log out of your account and remove the local copy of your API keys.
 ```
 
-_See code: [src/commands/logout.js](https://github.com/chec/cli/blob/1.0.0/src/commands/logout.js)_
+_See code: [src/commands/logout.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/logout.js)_
 
 ## `chec logs`
 
@@ -155,7 +155,7 @@ DESCRIPTION
   from Chec.
 ```
 
-_See code: [src/commands/logs.js](https://github.com/chec/cli/blob/1.0.0/src/commands/logs.js)_
+_See code: [src/commands/logs.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/logs.js)_
 
 ## `chec register`
 
@@ -169,7 +169,7 @@ DESCRIPTION
   Sign up for a Chec account through your browser
 ```
 
-_See code: [src/commands/register.js](https://github.com/chec/cli/blob/1.0.0/src/commands/register.js)_
+_See code: [src/commands/register.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/register.js)_
 
 ## `chec request METHOD RESOURCE [PAYLOAD]`
 
@@ -202,7 +202,7 @@ EXAMPLES
   $ chec request POST /v1/assets --file=my-asset-payload.json
 ```
 
-_See code: [src/commands/request.js](https://github.com/chec/cli/blob/1.0.0/src/commands/request.js)_
+_See code: [src/commands/request.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/request.js)_
 
 ## `chec whoami`
 
@@ -219,5 +219,5 @@ EXAMPLE
   $ chec whoami
 ```
 
-_See code: [src/commands/whoami.js](https://github.com/chec/cli/blob/1.0.0/src/commands/whoami.js)_
+_See code: [src/commands/whoami.js](https://github.com/chec/cli/blob/v1.1.0/src/commands/whoami.js)_
 <!-- commandsstop -->
