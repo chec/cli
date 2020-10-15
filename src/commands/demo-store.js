@@ -285,12 +285,13 @@ ${chalk.dim(manifest.description)}`)
     .streamOutput(true, true)
     .run()
 
+    // Handle opting out of seeding
     let {flags: {'no-seed': noSeed}} = this.parse(DemoStoreCommand)
     if (!noSeed) {
       const {seed} = await inquirer.prompt([{
         type: 'confirm',
         name: 'seed',
-        message: 'Do you want to run the seed scripts for this store?',
+        message: 'Do you want to seed sample data into your Chec account?',
         default: true,
       }])
 
@@ -298,8 +299,11 @@ ${chalk.dim(manifest.description)}`)
     }
 
     if (noSeed) {
-      this.log(chalk.yellow('Skipping additional build/seed scripts...'))
-      return
+      this.log(chalk.yellow('Skipping seeding sample data...'))
+      const seedIndex = buildScripts.indexOf('seed')
+      if (seedIndex > -1) {
+        buildScripts.splice(seedIndex, 1)
+      }
     }
 
     this.log(chalk.dim('Running additional build/seed scripts...'))
@@ -433,7 +437,7 @@ DemoStoreCommand.flags = {
     default: false,
   }),
   'no-seed': flags.boolean({
-    description: 'Skip the extra scripts seeding in the demo store',
+    description: 'Optionally skip seeding sample data into your Chec account',
     default: false,
   }),
   ...globalFlags,

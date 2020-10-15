@@ -323,19 +323,6 @@ describe('demo-store', () => {
   mockZipStream(base, 'basic-project', 'fake')
   .stub(spawner, 'create', sinon.stub().returns(mockSpawner))
   .stdout()
-  .command(['demo-store', 'npm-test', '/given/directory', '--no-seed'])
-  .it('Does not runs NPM install and scripts if no-seed flag is used', function () {
-    this.slow(600)
-
-    expect(spawner.create).to.have.callCount(1)
-
-    expect(spawner.create).to.have.been.calledWith('npm', ['--prefix', '/given/directory', 'install'])
-    expect(spawner.create).not.to.have.been.calledWith('npm', ['--prefix', '/given/directory', 'run', 'fake'])
-  })
-
-  mockZipStream(base, 'basic-project', 'fake')
-  .stub(spawner, 'create', sinon.stub().returns(mockSpawner))
-  .stdout()
   .command(['demo-store', 'yarn-test', '/given/directory'])
   .it('Uses yarn instead of NPM if configured', function () {
     this.slow(600)
