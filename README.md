@@ -1,5 +1,3 @@
-# Chec CLI
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/chec/commercejs-examples/master/assets/logo.svg" width="500" height="100" />
 </p>
@@ -11,6 +9,7 @@
   <a href="https://npmjs.org/package/@chec/cli" rel="nofollow"><img alt="Downloads/week" src="https://img.shields.io/npm/dw/@chec/cli.svg"></a>
 </p>
 
+# Chec CLI
 <!-- toc -->
 * [Usage](#usage)
 * [Commands](#commands)
