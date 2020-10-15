@@ -285,7 +285,24 @@ ${chalk.dim(manifest.description)}`)
     .streamOutput(true, true)
     .run()
 
-    // Loop through additional scripts and await their execution
+    let {flags: {'no-seed': noSeed}} = this.parse(DemoStoreCommand)
+    if (!noSeed) {
+      const {seed} = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'seed',
+        message: 'Do you want to run the seed scripts for this store?',
+        default: true,
+      }])
+
+      noSeed = !seed
+    }
+
+    if (noSeed) {
+      this.log(chalk.yellow('Skipping additional build/seed scripts...'))
+      return
+    }
+
+    this.log(chalk.dim('Running additional build/seed scripts...'))
     for (const script of buildScripts) {
       // eslint-disable-next-line no-await-in-loop
       await spawner.create(command, [...baseArgs, 'run', script], {stdio: 'inherit'}).run()
@@ -413,6 +430,10 @@ DemoStoreCommand.flags = {
   }),
   'no-login': flags.boolean({
     description: 'Optionally skip the login requirement. This is likely to be incompatible with example stores that are available for download',
+    default: false,
+  }),
+  'no-seed': flags.boolean({
+    description: 'Skip the extra scripts seeding in the demo store',
     default: false,
   }),
   ...globalFlags,
