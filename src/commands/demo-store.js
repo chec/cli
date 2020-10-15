@@ -26,7 +26,7 @@ class DemoStoreCommand extends Command {
 
     // Check that the user provided a store and if it's something that's known before going and updating our cache
     if (!store || !this.getStoreFromCache(store)) {
-      await this.retreiveStores()
+      await this.retrieveStores()
     }
 
     // If the user didn't specify a store, ask them
@@ -66,7 +66,7 @@ class DemoStoreCommand extends Command {
    *
    * @return {Promise<Array>} A promise that resolves to the list of stores fetched freshly from GitHub
    */
-  async retreiveStores() {
+  async retrieveStores() {
     if (this.stores) {
       return this.stores
     }
@@ -95,7 +95,7 @@ class DemoStoreCommand extends Command {
    */
   async askForStore() {
     // Grab the stores and _clone_ the array
-    const stores = (await this.retreiveStores()).slice(0)
+    const stores = (await this.retrieveStores()).slice(0)
 
     // Return the only store if there's one
     if (stores.length === 1) {
