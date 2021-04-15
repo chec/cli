@@ -3,7 +3,6 @@
 </p>
 <p align="center">
   <a href="https://circleci.com/gh/chec/cli/tree/master" rel="nofollow"><img alt="CircleCI" src="https://circleci.com/gh/chec/cli/tree/master.svg?style=shield"></a>
-  <a href="https://codecov.io/gh/chec/cli" rel="nofollow"><img alt="Codecov" src="https://codecov.io/gh/chec/cli/branch/master/graph/badge.svg"></a>
   <a href="https://github.com/chec/cli/blob/master/LICENSE.md"><img alt="License" src="https://img.shields.io/github/license/chec/cli.svg"></a>
   <a href="https://npmjs.org/package/@chec/cli" rel="nofollow"><img alt="Version" src="https://img.shields.io/npm/v/@chec/cli.svg"></a>
   <a href="https://npmjs.org/package/@chec/cli" rel="nofollow"><img alt="Downloads/week" src="https://img.shields.io/npm/dw/@chec/cli.svg"></a>
