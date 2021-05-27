@@ -32,9 +32,13 @@ class LogsCommand extends Command {
         this.logs = await requestHelper.request(
           'GET',
           '/v1/developer/logs',
-          {last: tail},
+          {limit: tail},
           {domain}
-        ).then(response => JSON.parse(response.body).map(entry => new LogEntry(entry, domain)))
+        ).then(response => {
+          // 2021-06-02 adds "data" as a response key, this handles both formats
+          const result = response.body.data || response.body
+          return JSON.parse(result).map(entry => new LogEntry(entry, domain))
+        })
       } catch (error) {
         const errorMessage = error.response.statusCode === 403 ?
           'Authentication error, try logging out and back in again.' :

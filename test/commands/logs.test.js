@@ -149,7 +149,7 @@ describe('logs', () => {
     expect(requestHelper.request).to.have.been.calledOnceWith(
       'GET',
       '/v1/developer/logs',
-      {last: 5},
+      {limit: 5},
       {domain: 'chec.io'},
     )
     expect(ctx.stdout).to.contain(stripAnsi(fakeLogEntry.formattedSummary()))
