@@ -26,6 +26,7 @@ module.exports = {
         'User-Agent': 'chec/cli',
         'content-type': 'application/json',
         'x-authorization': key || null,
+        'Chec-Version': '2021-06-02',
         ...extraOptions.headers || {},
       },
     }

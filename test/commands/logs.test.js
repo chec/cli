@@ -141,7 +141,7 @@ describe('logs', () => {
 
   // Tailing existing logs at the beginning
   base
-  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify((new Array(5)).fill(fakePartialLog))}))
+  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify({data: (new Array(5)).fill(fakePartialLog)})}))
   .stdout()
   .quitsAfter(10)
   .command(['logs', '-n5'])
@@ -149,14 +149,14 @@ describe('logs', () => {
     expect(requestHelper.request).to.have.been.calledOnceWith(
       'GET',
       '/v1/developer/logs',
-      {last: 5},
+      {limit: 5},
       {domain: 'chec.io'},
     )
     expect(ctx.stdout).to.contain(stripAnsi(fakeLogEntry.formattedSummary()))
   })
 
   base
-  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify((new Array(5)).fill(fakePartialLog))}))
+  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify({data: (new Array(5)).fill(fakePartialLog)})}))
   .stdout()
   .timeout(10) // This timeout for the test should assert the expectation is resolved before the 4 second cancel above
   .command(['logs', '-n5', '--no-follow'])
@@ -227,7 +227,7 @@ describe('logs', () => {
   })
 
   base
-  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify((new Array(15)).fill(fakePartialLog))}))
+  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify({data: (new Array(15)).fill(fakePartialLog)})}))
   .stub(inquirer, 'prompt', sinon.fake.returns({
     response: false,
   }))
@@ -246,7 +246,7 @@ describe('logs', () => {
   })
 
   base
-  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify((new Array(15)).fill(fakePartialLog))}))
+  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify({data: (new Array(15)).fill(fakePartialLog)})}))
   .stub(inquirer, 'prompt', (() => {
     const stub = sinon.stub()
     stub.onCall(0).resolves({response: -1})
@@ -272,7 +272,7 @@ describe('logs', () => {
   })
 
   base
-  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify((new Array(15)).fill(fakePartialLog))}))
+  .stub(requestHelper, 'request', sinon.stub().resolves({body: JSON.stringify({data: (new Array(15)).fill(fakePartialLog)})}))
   .stub(inquirer, 'prompt', sinon.fake.returns({
     response: false,
   }))
