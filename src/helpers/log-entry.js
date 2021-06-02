@@ -25,7 +25,7 @@ module.exports = class LogEntry {
   }
 
   /**
-   * @returns {integer} The log ID for this entry
+   * @returns {string} The log ID for this entry
    */
   id() {
     return this.raw.log_id
