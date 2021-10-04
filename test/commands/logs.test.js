@@ -33,10 +33,10 @@ class FakeFeed {
 }
 
 const fakePartialLog = {
-  log_id: 123, // eslint-disable-line camelcase
+  id: 123,
   status_code: 201, // eslint-disable-line camelcase
   url: '/v1/fake/endpoint',
-  time: 1572304602,
+  created: 1572304602,
 }
 const fakeFullLog = {
   ...fakePartialLog,
@@ -136,7 +136,7 @@ describe('logs', () => {
   .receivesLogAfter(10, fakePartialLog)
   .command('logs')
   .it('should update the listening message when there is at least one log on the screen', ctx => {
-    expect(ctx.stdout).to.contain('Press "up" to navigate through the exisiting logs')
+    expect(ctx.stdout).to.contain('Press "up" to navigate through the existing logs')
   })
 
   // Tailing existing logs at the beginning

@@ -29,10 +29,10 @@ const {expect} = chai
 chai.use(sinonChai)
 
 const fakePartialLog = {
-  log_id: 123, // eslint-disable-line camelcase
+  id: 123,
   status_code: 201, // eslint-disable-line camelcase
   url: '/v1/fake/endpoint',
-  time: 1572304602,
+  created: 1572304602,
 }
 const fakeFullLog = {
   ...fakePartialLog,
@@ -51,8 +51,8 @@ describe('LogEntry', () => {
   })
 
   describe('construction', () => {
-    it('requires at least a "log_id"', () => {
-      expect(() => new LogEntry({})).to.throw('LogEntry must be given a "raw" entry that at least contains the `log_id`')
+    it('requires at least a "id"', () => {
+      expect(() => new LogEntry({})).to.throw('LogEntry must be given a "raw" entry that at least contains the `id`')
     })
     it('does not do any requests', () => {
       new LogEntry(fakePartialLog) // eslint-disable-line no-new
@@ -64,7 +64,7 @@ describe('LogEntry', () => {
   })
 
   describe('id', () => {
-    it('returns the log_id', () => {
+    it('returns the log ID', () => {
       const log = new LogEntry(fakePartialLog)
       expect(log.id()).to.equal(123)
     })
