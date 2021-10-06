@@ -12,10 +12,10 @@ module.exports = class LogEntry {
    * @param {string} domain The domain that issued this log, for fetching further information about the log
    */
   constructor(rawEntry, domain = 'chec.io') {
-    const {log_id: logId} = rawEntry
+    const {id: logId} = rawEntry
 
     if (!logId) {
-      throw new Error('LogEntry must be given a "raw" entry that at least contains the `log_id`')
+      throw new Error('LogEntry must be given a "raw" entry that at least contains the `id`')
     }
 
     this.raw = rawEntry
@@ -28,7 +28,7 @@ module.exports = class LogEntry {
    * @returns {string} The log ID for this entry
    */
   id() {
-    return this.raw.log_id
+    return this.raw.id
   }
 
   /**
@@ -80,9 +80,9 @@ module.exports = class LogEntry {
    * @returns {string} The formatted date
    */
   formattedDate(utc = false) {
-    const {time} = this.raw
+    const {created} = this.raw
     const suffix = utc ? 'O' : ''
-    const parsedDate = dateFormat(`yyyy-MM-dd hh:mm:ss${suffix}`, new Date(time * 1000))
+    const parsedDate = dateFormat(`yyyy-MM-dd hh:mm:ss${suffix}`, new Date(created * 1000))
 
     if (!utc) {
       return parsedDate
@@ -98,7 +98,7 @@ module.exports = class LogEntry {
    * @return {string} A formatted string to log
    */
   formattedSummary(utc = false) {
-    const {status_code: statusCode, log_id: id, url} = this.raw
+    const {status_code: statusCode, id, url} = this.raw
 
     const date = chalk.dim(`[${this.formattedDate(utc)}]`)
     const responseCodeColor = statusCode >= 200 && statusCode < 300 ? 'bgGreen' :

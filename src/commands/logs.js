@@ -81,7 +81,7 @@ class LogsCommand extends Command {
     // Always reset the "canLog" tracker
     this.canLog = true
 
-    const navigationPrompt = 'Press "up" to navigate through the exisiting logs'
+    const navigationPrompt = 'Press "up" to navigate through the existing logs'
     this.spinner(`Listening for logs from Chec. ${this.logs.length > 0 ? navigationPrompt : ''}`)
 
     // Wait for the user to navigation logs
@@ -119,7 +119,7 @@ class LogsCommand extends Command {
         entry.setPrinted()
 
         // Restart the spinner
-        this.spinner('Listening for logs from Chec. Press "up" to navigate through the exisiting logs')
+        this.spinner('Listening for logs from Chec. Press "up" to navigate through the existing logs')
 
         // Keep logs pruned
         this.pruneLogs()

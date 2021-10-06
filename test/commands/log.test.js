@@ -11,10 +11,10 @@ const {expect} = chai
 chai.use(sinonChai)
 
 const fakeFullLog = {
-  log_id: 123, // eslint-disable-line camelcase
+  id: 123,
   status_code: 201, // eslint-disable-line camelcase
   url: '/v1/fake/endpoint',
-  time: 1572304602,
+  created: 1572304602,
   response: {content: 'test response'},
 }
 

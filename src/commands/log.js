@@ -12,7 +12,7 @@ class LogCommand extends Command {
 
   async run() {
     const {args: {logId}, flags: {domain, raw, utc}} = this.parse(LogCommand)
-    const log = new LogEntry({log_id: logId}, domain) // eslint-disable-line camelcase
+    const log = new LogEntry({id: logId}, domain)
     const spinner = ora({
       text: 'Fetching log from Chec...',
       stream: process.stdout,
