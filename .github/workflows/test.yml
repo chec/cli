@@ -1,0 +1,38 @@
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+      - run: yarn install
+      - name: Lint
+        run: yarn lint
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ '12', '14', '16' ]
+    name: Node ${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: 'https://registry.npmjs.org'
+      - run: yarn install
+      - name: Test
+        run: yarn test
+      - name: Run coverage
+        if: ${{ matrix.node == '16' }}
+        run: yarn nyc report --reporter text-lcov > coverage.lcov
+      - name: Upload coverage
+        if: ${{ matrix.node == '16' }}
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.lcov

@@ -6,3 +6,4 @@
 /tmp
 /coverage
 node_modules
+coverage.lcov
