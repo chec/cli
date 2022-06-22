@@ -16,7 +16,7 @@
     "clipboardy": "^2.1.0",
     "date-format": "^2.1.0",
     "fstream": "^1.0.12",
-    "got": "^9.6.0",
+    "got": "^11.8.5",
     "inquirer": "^7.0.0",
     "json-colorizer": "^2.2.1",
     "key-value-file": "^1.0.7",
